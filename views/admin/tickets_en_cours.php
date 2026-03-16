@@ -6,6 +6,11 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+if ($_SESSION['role'] !== 'admin') {
+    header("Location: index.php?action=client_dashboard");
+    exit;
+}
+
 require_once __DIR__ . '/../../config/database.php';
 
 $db = new Database();
@@ -40,6 +45,8 @@ $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <td><?= htmlspecialchars($ticket['priority']) ?></td>
             <td><?= htmlspecialchars($ticket['status']) ?></td>
             <td>
+                <a href="index.php?action=edit_ticket&id=<?= $ticket['id'] ?>">Modifier</a>
+                |
                 <a href="index.php?action=traiter&id=<?= $ticket['id'] ?>">Traiter</a>
                 |
                 <a href="index.php?action=refuser&id=<?= $ticket['id'] ?>">Refuser</a>

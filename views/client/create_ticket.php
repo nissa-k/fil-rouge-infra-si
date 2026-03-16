@@ -5,6 +5,11 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: index.php?action=login");
     exit;
 }
+
+if ($_SESSION['role'] !== 'user') {
+    header("Location: index.php?action=dashboard");
+    exit;
+}
 ?>
 
 <h1>Créer une requête</h1>

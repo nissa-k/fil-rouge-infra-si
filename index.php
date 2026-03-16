@@ -77,26 +77,26 @@ switch ($action) {
         break;
     case 'store_ticket':
 
-    session_start();
+        session_start();
 
-    require_once __DIR__ . '/config/database.php';
+        require_once __DIR__ . '/config/database.php';
 
-    $db = new Database();
-    $pdo = $db->getConnection();
+        $db = new Database();
+        $pdo = $db->getConnection();
 
-    $title = $_POST['title'];
-    $description = $_POST['description'];
-    $priority = $_POST['priority'];
+        $title = $_POST['title'];
+        $description = $_POST['description'];
+        $priority = $_POST['priority'];
 
-    $query = "INSERT INTO tickets (user_id, title, description, priority, status, created_at)
-              VALUES (:user_id, :title, :description, :priority, 'en_cours', NOW())";
+        $query = "INSERT INTO tickets (user_id, title, description, priority, status, created_at)
+            VALUES (:user_id, :title, :description, :priority, 'en_cours', NOW())";
 
-    $stmt = $pdo->prepare($query);
-    $stmt->execute([
-        'user_id' => $_SESSION['user_id'],
-        'title' => $title,
-        'description' => $description,
-        'priority' => $priority
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([
+            'user_id' => $_SESSION['user_id'],
+            'title' => $title,
+            'description' => $description,
+            'priority' => $priority
     ]);
 
     header("Location: index.php?action=my_tickets");
@@ -105,4 +105,78 @@ switch ($action) {
     case 'client_dashboard':
         require_once __DIR__ . '/views/client/dashboard.php';
         break;
+    case 'my_tickets':
+        require_once __DIR__ . '/views/client/my_tickets.php';
+        break;
+    case 'edit_ticket':
+        require_once __DIR__ . '/views/admin/edit_ticket.php';
+        break;
+    case 'update_ticket':
+
+        require_once __DIR__ . '/config/database.php';
+
+        $db = new Database();
+        $pdo = $db->getConnection();
+
+        $id = $_POST['id'];
+        $title = $_POST['title'];
+        $description = $_POST['description'];
+        $priority = $_POST['priority'];
+        $status = $_POST['status'];
+
+        $query = "UPDATE tickets
+                SET title = :title,
+                    description = :description,
+                    priority = :priority,
+                    status = :status
+                WHERE id = :id";
+
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([
+            'title' => $title,
+            'description' => $description,
+            'priority' => $priority,
+            'status' => $status,
+            'id' => $id
+        ]);
+
+        header("Location: index.php?action=tickets_en_cours");
+        exit;
+        case 'edit_ticket':
+    require_once __DIR__ . '/views/admin/edit_ticket.php';
+    break;
+
+case 'update_ticket':
+    require_once __DIR__ . '/config/database.php';
+
+    $db = new Database();
+    $pdo = $db->getConnection();
+
+    $id = $_POST['id'] ?? null;
+    $title = $_POST['title'] ?? '';
+    $description = $_POST['description'] ?? '';
+    $priority = $_POST['priority'] ?? 'medium';
+    $status = $_POST['status'] ?? 'en_cours';
+
+    if ($id) {
+        $query = "UPDATE tickets
+                  SET title = :title,
+                      description = :description,
+                      priority = :priority,
+                      status = :status,
+                      updated_at = NOW()
+                  WHERE id = :id";
+
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([
+            'title' => $title,
+            'description' => $description,
+            'priority' => $priority,
+            'status' => $status,
+            'id' => $id
+        ]);
+    }
+
+    header("Location: index.php?action=tickets_en_cours");
+    exit;
 }

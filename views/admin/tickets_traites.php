@@ -6,6 +6,11 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+if ($_SESSION['role'] !== 'admin') {
+    header("Location: index.php?action=client_dashboard");
+    exit;
+}
+
 require_once __DIR__ . '/../../config/database.php';
 
 $db = new Database();
