@@ -1,31 +1,18 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion</title>
-</head>
-<body>
+<h1>Connexion</h1>
 
-    <h1>Connexion</h1>
+<form method="POST" action="index.php?action=do_login">
 
-    <form action="index.php?action=do_login" method="POST">
-        <div>
-            <label for="email">Email :</label>
-            <input type="email" name="email" id="email" required>
-        </div>
+    <label>Email :</label><br>
+    <input type="email" name="email" required>
+    <br><br>
 
-        <br>
+    <label>Mot de passe :</label><br>
+    <input type="password" name="password" required>
+    <br><br>
 
-        <div>
-            <label for="password">Mot de passe :</label>
-            <input type="password" name="password" id="password" required>
-        </div>
+    <button type="submit">Se connecter</button>
+    <a href="index.php?action=register">Créer un compte</a>
 
-        <br>
+</form>
 
-        <button type="submit">Se connecter</button>
-    </form>
-
-</body>
-</html>
+<br>

@@ -58,4 +58,53 @@ class AuthController
         header("Location: index.php?action=login");
         exit;
     }
+    public function register()
+{
+    require_once __DIR__ . '/../config/database.php';
+
+    $db = new Database();
+    $pdo = $db->getConnection();
+
+    $full_name = trim($_POST['full_name'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $passwordPlain = $_POST['password'] ?? '';
+
+    if ($full_name === '' || $email === '' || $passwordPlain === '') {
+        echo "Tous les champs sont obligatoires.";
+        return;
+    }
+
+    $checkQuery = "SELECT id FROM users WHERE email = :email LIMIT 1";
+    $checkStmt = $pdo->prepare($checkQuery);
+    $checkStmt->execute(['email' => $email]);
+
+    if ($checkStmt->fetch()) {
+        echo "Cet email existe déjà. Choisis-en un autre.";
+        return;
+    }
+
+    $password = password_hash($passwordPlain, PASSWORD_DEFAULT);
+
+    $query = "INSERT INTO users (email, password_hash, full_name, is_active, created_at)
+              VALUES (:email, :password, :full_name, 1, NOW())";
+
+    $stmt = $pdo->prepare($query);
+    $stmt->execute([
+        'email' => $email,
+        'password' => $password,
+        'full_name' => $full_name
+    ]);
+
+    $userId = $pdo->lastInsertId();
+
+    $roleQuery = "INSERT INTO user_roles (user_id, role_id) VALUES (:user_id, 2)";
+    $roleStmt = $pdo->prepare($roleQuery);
+    $roleStmt->execute([
+        'user_id' => $userId
+    ]);
+
+    header("Location: index.php?action=login");
+    exit;
+}
+   
 }

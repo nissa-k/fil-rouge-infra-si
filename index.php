@@ -157,4 +157,12 @@ switch ($action) {
     default:
         echo "Page introuvable";
         break;
+    case 'register':
+        require_once __DIR__ . '/views/auth/register.php';
+        break;
+
+    case 'do_register':
+        require_once __DIR__ . '/controllers/AuthController.php';
+        $authController->register();
+        break;
 }
