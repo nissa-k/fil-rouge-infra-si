@@ -50,6 +50,8 @@ $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <a href="index.php?action=traiter&id=<?= $ticket['id'] ?>">Traiter</a>
                 |
                 <a href="index.php?action=refuser&id=<?= $ticket['id'] ?>">Refuser</a>
+                |
+                <a href="index.php?action=delete_ticket&id=<?= $ticket['id'] ?>" onclick="return confirm('Supprimer ce ticket ?')">Supprimer</a>
             </td>
         </tr>
     <?php endforeach; ?>

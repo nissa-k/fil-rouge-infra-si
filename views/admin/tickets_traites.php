@@ -34,6 +34,7 @@ $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <th>Description</th>
         <th>Priorité</th>
         <th>Status</th>
+        <th>Action</th>
     </tr>
 
     <?php foreach ($tickets as $ticket): ?>
@@ -43,6 +44,15 @@ $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <td><?= htmlspecialchars($ticket['description']) ?></td>
             <td><?= htmlspecialchars($ticket['priority']) ?></td>
             <td><?= htmlspecialchars($ticket['status']) ?></td>
+            <td>
+                <a href="index.php?action=edit_ticket&id=<?= $ticket['id'] ?>">Modifier</a>
+                |
+                <a href="index.php?action=traiter&id=<?= $ticket['id'] ?>">Traiter</a>
+                |
+                <a href="index.php?action=refuser&id=<?= $ticket['id'] ?>">Refuser</a>
+                |
+                <a href="index.php?action=delete_ticket&id=<?= $ticket['id'] ?>" onclick="return confirm('Supprimer ce ticket ?')">Supprimer</a>
+            </td>
         </tr>
     <?php endforeach; ?>
 </table>

@@ -165,4 +165,63 @@ switch ($action) {
         require_once __DIR__ . '/controllers/AuthController.php';
         $authController->register();
         break;
+    case 'delete_ticket':
+        session_start();
+
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: index.php?action=login");
+            exit;
+    }
+
+        if ($_SESSION['role'] !== 'admin') {
+            header("Location: index.php?action=client_dashboard");
+            exit;
+    }
+
+    require_once __DIR__ . '/config/database.php';
+
+    $db = new Database();
+    $pdo = $db->getConnection();
+
+    $id = $_GET['id'] ?? null;
+
+    if ($id) {
+        $query = "DELETE FROM tickets WHERE id = :id";
+        $stmt = $pdo->prepare($query);
+        $stmt->execute(['id' => $id]);
+    }
+
+    header("Location: index.php?action=tickets_en_cours");
+    exit;
+    case 'users':
+        require_once __DIR__ . '/views/admin/users.php';
+        break;
+    case 'delete_user':
+    session_start();
+
+    if (!isset($_SESSION['user_id'])) {
+        header("Location: index.php?action=login");
+        exit;
+    }
+
+    if ($_SESSION['role'] !== 'admin') {
+        header("Location: index.php?action=client_dashboard");
+        exit;
+    }
+
+    require_once __DIR__ . '/config/database.php';
+
+    $db = new Database();
+    $pdo = $db->getConnection();
+
+    $id = $_GET['id'] ?? null;
+
+    if ($id && $id != $_SESSION['user_id']) {
+        $query = "DELETE FROM users WHERE id = :id";
+        $stmt = $pdo->prepare($query);
+        $stmt->execute(['id' => $id]);
+    }
+
+    header("Location: index.php?action=users");
+    exit;
 }

@@ -27,6 +27,7 @@ if ($_SESSION['role'] !== 'admin') {
         <li><a href="index.php?action=tickets_en_cours">Requêtes en cours</a></li>
         <li><a href="index.php?action=tickets_traites">Requêtes traitées</a></li>
         <li><a href="index.php?action=tickets_refuses">Requêtes refusées</a></li>
+        <li><a href="index.php?action=users">Gérer les utilisateurs</a></li>
         <li><a href="index.php?action=logout">Déconnexion</a></li>
     </ul>
 
