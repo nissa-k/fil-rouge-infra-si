@@ -14,25 +14,24 @@ if ($_SESSION['role'] !== 'user') {
 
 <h1>Créer une requête</h1>
 
-<p><a href="index.php?action=dashboard">Retour dashboard</a></p>
+<p><a href="index.php?action=client_dashboard">Retour dashboard client</a></p>
 
 <form method="POST" action="index.php?action=store_ticket">
+    <label for="title">Titre :</label><br>
+    <input type="text" name="title" id="title" required>
+    <br><br>
 
-    <label>Titre :</label><br>
-    <input type="text" name="title" required><br><br>
+    <label for="description">Description :</label><br>
+    <textarea name="description" id="description" required></textarea>
+    <br><br>
 
-    <label>Description :</label><br>
-    <textarea name="description" required></textarea><br><br>
-
-    <label>Priorité :</label><br>
-    <select name="priority">
+    <label for="priority">Priorité :</label><br>
+    <select name="priority" id="priority">
         <option value="low">Faible</option>
         <option value="medium">Moyenne</option>
         <option value="high">Haute</option>
     </select>
-
     <br><br>
 
     <button type="submit">Créer la requête</button>
-
 </form>
