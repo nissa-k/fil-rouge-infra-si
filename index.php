@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/controllers/AuthController.php';
+require_once __DIR__ . '/helpers/flash.php';
 
 $action = $_GET['action'] ?? 'login';
 
@@ -13,6 +14,18 @@ switch ($action) {
 
     case 'do_login':
         $authController->login();
+        break;
+
+    case 'register':
+        require_once __DIR__ . '/views/auth/register.php';
+        break;
+
+    case 'do_register':
+        $authController->register();
+        break;
+
+    case 'logout':
+        $authController->logout();
         break;
 
     case 'dashboard':
@@ -35,7 +48,23 @@ switch ($action) {
         require_once __DIR__ . '/views/admin/tickets_refuses.php';
         break;
 
+    case 'users':
+        require_once __DIR__ . '/views/admin/users.php';
+        break;
+
     case 'traiter':
+        session_start();
+
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: index.php?action=login");
+            exit;
+        }
+
+        if ($_SESSION['role'] !== 'admin') {
+            header("Location: index.php?action=client_dashboard");
+            exit;
+        }
+
         require_once __DIR__ . '/config/database.php';
 
         $db = new Database();
@@ -53,6 +82,18 @@ switch ($action) {
         exit;
 
     case 'refuser':
+        session_start();
+
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: index.php?action=login");
+            exit;
+        }
+
+        if ($_SESSION['role'] !== 'admin') {
+            header("Location: index.php?action=client_dashboard");
+            exit;
+        }
+
         require_once __DIR__ . '/config/database.php';
 
         $db = new Database();
@@ -69,28 +110,117 @@ switch ($action) {
         header("Location: index.php?action=tickets_en_cours");
         exit;
 
-    case 'create_ticket':
-        require_once __DIR__ . '/views/client/create_ticket.php';
-        break;
-
-    case 'store_ticket':
+    case 'delete_ticket':
         session_start();
-        require_once __DIR__ . '/config/database.php';
 
         if (!isset($_SESSION['user_id'])) {
             header("Location: index.php?action=login");
             exit;
         }
 
+        if ($_SESSION['role'] !== 'admin') {
+            header("Location: index.php?action=client_dashboard");
+            exit;
+        }
+
+        require_once __DIR__ . '/config/database.php';
+
+        $db = new Database();
+        $pdo = $db->getConnection();
+
+        $id = $_GET['id'] ?? null;
+
+        if ($id) {
+            $query = "DELETE FROM tickets WHERE id = :id";
+            $stmt = $pdo->prepare($query);
+            $stmt->execute(['id' => $id]);
+        }
+
+        header("Location: index.php?action=tickets_en_cours");
+        exit;
+
+    case 'delete_user':
+        session_start();
+
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: index.php?action=login");
+            exit;
+        }
+
+        if ($_SESSION['role'] !== 'admin') {
+            header("Location: index.php?action=client_dashboard");
+            exit;
+        }
+
+        require_once __DIR__ . '/config/database.php';
+
+        $db = new Database();
+        $pdo = $db->getConnection();
+
+        $id = $_GET['id'] ?? null;
+
+        if ($id && $id != $_SESSION['user_id']) {
+            $deleteRoles = "DELETE FROM user_roles WHERE user_id = :id";
+            $stmtRoles = $pdo->prepare($deleteRoles);
+            $stmtRoles->execute(['id' => $id]);
+
+            $deleteUser = "DELETE FROM users WHERE id = :id";
+            $stmtUser = $pdo->prepare($deleteUser);
+            $stmtUser->execute(['id' => $id]);
+        }
+
+        header("Location: index.php?action=users");
+        exit;
+
+    case 'create_ticket':
+        require_once __DIR__ . '/views/client/create_ticket.php';
+        break;
+
+    case 'store_ticket':
+        session_start();
+
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: index.php?action=login");
+            exit;
+        }
+
+        if ($_SESSION['role'] !== 'user') {
+            header("Location: index.php?action=dashboard");
+            exit;
+        }
+
+        require_once __DIR__ . '/config/database.php';
+
         $db = new Database();
         $pdo = $db->getConnection();
 
         $title = trim($_POST['title'] ?? '');
         $description = trim($_POST['description'] ?? '');
-        $priority = $_POST['priority'] ?? 'medium';
+        $priority = $_POST['priority'] ?? '';
 
-        if ($title === '' || $description === '') {
-            echo "Titre ou description vide";
+        $allowedPriorities = ['low', 'medium', 'high'];
+
+        if ($title === '' || $description === '' || $priority === '') {
+            setFlash('error', 'Tous les champs sont obligatoires.');
+            header("Location: index.php?action=create_ticket");
+            exit;
+        }
+
+        if (mb_strlen($title) > 150) {
+            setFlash('error', 'Le titre ne doit pas dépasser 150 caractères.');
+            header("Location: index.php?action=create_ticket");
+            exit;
+        }
+
+        if (mb_strlen($description) > 1000) {
+            setFlash('error', 'La description ne doit pas dépasser 1000 caractères.');
+            header("Location: index.php?action=create_ticket");
+            exit;
+        }
+
+        if (!in_array($priority, $allowedPriorities, true)) {
+            setFlash('error', 'Priorité invalide.');
+            header("Location: index.php?action=create_ticket");
             exit;
         }
 
@@ -105,6 +235,7 @@ switch ($action) {
             'priority' => $priority
         ]);
 
+        setFlash('success', 'Requête créée avec succès.');
         header("Location: index.php?action=my_tickets");
         exit;
 
@@ -117,6 +248,18 @@ switch ($action) {
         break;
 
     case 'update_ticket':
+        session_start();
+
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: index.php?action=login");
+            exit;
+        }
+
+        if ($_SESSION['role'] !== 'admin') {
+            header("Location: index.php?action=client_dashboard");
+            exit;
+        }
+
         require_once __DIR__ . '/config/database.php';
 
         $db = new Database();
@@ -125,103 +268,65 @@ switch ($action) {
         $id = $_POST['id'] ?? null;
         $title = trim($_POST['title'] ?? '');
         $description = trim($_POST['description'] ?? '');
-        $priority = $_POST['priority'] ?? 'medium';
-        $status = $_POST['status'] ?? 'en_cours';
+        $priority = $_POST['priority'] ?? '';
+        $status = $_POST['status'] ?? '';
 
-        if ($id) {
-            $query = "UPDATE tickets
-                      SET title = :title,
-                          description = :description,
-                          priority = :priority,
-                          status = :status,
-                          updated_at = NOW()
-                      WHERE id = :id";
+        $allowedPriorities = ['low', 'medium', 'high'];
+        $allowedStatuses = ['en_cours', 'traitee', 'refusee'];
 
-            $stmt = $pdo->prepare($query);
-            $stmt->execute([
-                'title' => $title,
-                'description' => $description,
-                'priority' => $priority,
-                'status' => $status,
-                'id' => $id
-            ]);
+        if (!$id || $title === '' || $description === '' || $priority === '' || $status === '') {
+            setFlash('error', 'Tous les champs sont obligatoires.');
+            header("Location: index.php?action=edit_ticket&id=" . urlencode((string)$id));
+            exit;
         }
 
+        if (mb_strlen($title) > 150) {
+            setFlash('error', 'Le titre ne doit pas dépasser 150 caractères.');
+            header("Location: index.php?action=edit_ticket&id=" . urlencode((string)$id));
+            exit;
+        }
+
+        if (mb_strlen($description) > 1000) {
+            setFlash('error', 'La description ne doit pas dépasser 1000 caractères.');
+            header("Location: index.php?action=edit_ticket&id=" . urlencode((string)$id));
+            exit;
+        }
+
+        if (!in_array($priority, $allowedPriorities, true)) {
+            setFlash('error', 'Priorité invalide.');
+            header("Location: index.php?action=edit_ticket&id=" . urlencode((string)$id));
+            exit;
+        }
+
+        if (!in_array($status, $allowedStatuses, true)) {
+            setFlash('error', 'Statut invalide.');
+            header("Location: index.php?action=edit_ticket&id=" . urlencode((string)$id));
+            exit;
+        }
+
+        $query = "UPDATE tickets
+                  SET title = :title,
+                      description = :description,
+                      priority = :priority,
+                      status = :status,
+                      updated_at = NOW()
+                  WHERE id = :id";
+
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([
+            'title' => $title,
+            'description' => $description,
+            'priority' => $priority,
+            'status' => $status,
+            'id' => $id
+        ]);
+
+        setFlash('success', 'Requête mise à jour avec succès.');
         header("Location: index.php?action=tickets_en_cours");
         exit;
 
-    case 'logout':
-        $authController->logout();
-        break;
-
     default:
-        echo "Page introuvable";
-        break;
-    case 'register':
-        require_once __DIR__ . '/views/auth/register.php';
-        break;
-
-    case 'do_register':
-        require_once __DIR__ . '/controllers/AuthController.php';
-        $authController->register();
-        break;
-    case 'delete_ticket':
-        session_start();
-
-        if (!isset($_SESSION['user_id'])) {
-            header("Location: index.php?action=login");
-            exit;
-    }
-
-        if ($_SESSION['role'] !== 'admin') {
-            header("Location: index.php?action=client_dashboard");
-            exit;
-    }
-
-    require_once __DIR__ . '/config/database.php';
-
-    $db = new Database();
-    $pdo = $db->getConnection();
-
-    $id = $_GET['id'] ?? null;
-
-    if ($id) {
-        $query = "DELETE FROM tickets WHERE id = :id";
-        $stmt = $pdo->prepare($query);
-        $stmt->execute(['id' => $id]);
-    }
-
-    header("Location: index.php?action=tickets_en_cours");
-    exit;
-    case 'users':
-        require_once __DIR__ . '/views/admin/users.php';
-        break;
-    case 'delete_user':
-    session_start();
-
-    if (!isset($_SESSION['user_id'])) {
+        setFlash('error', 'Page introuvable.');
         header("Location: index.php?action=login");
         exit;
-    }
-
-    if ($_SESSION['role'] !== 'admin') {
-        header("Location: index.php?action=client_dashboard");
-        exit;
-    }
-
-    require_once __DIR__ . '/config/database.php';
-
-    $db = new Database();
-    $pdo = $db->getConnection();
-
-    $id = $_GET['id'] ?? null;
-
-    if ($id && $id != $_SESSION['user_id']) {
-        $query = "DELETE FROM users WHERE id = :id";
-        $stmt = $pdo->prepare($query);
-        $stmt->execute(['id' => $id]);
-    }
-
-    header("Location: index.php?action=users");
-    exit;
 }

@@ -1,23 +1,40 @@
-<h1>Créer un compte</h1>
+<?php
+session_start();
+require_once __DIR__ . '/../../helpers/flash.php';
+$flash = getFlash();
+?>
 
-<form method="POST" action="index.php?action=do_register">
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Créer un compte</title>
+</head>
+<body>
 
-    <label>Nom complet :</label><br>
-    <input type="text" name="full_name" required>
-    <br><br>
+    <h1>Créer un compte</h1>
 
-    <label>Email :</label><br>
-    <input type="email" name="email" required>
-    <br><br>
+    <?php if ($flash): ?>
+        <p><?= htmlspecialchars($flash['message']) ?></p>
+    <?php endif; ?>
 
-    <label>Mot de passe :</label><br>
-    <input type="password" name="password" required>
-    <br><br>
+    <p><a href="index.php?action=login">Retour connexion</a></p>
 
-    <button type="submit">Créer le compte</button>
+    <form method="POST" action="index.php?action=do_register">
+        <label for="full_name">Nom complet :</label><br>
+        <input type="text" name="full_name" id="full_name" maxlength="100" required>
+        <br><br>
 
-</form>
+        <label for="email">Email :</label><br>
+        <input type="email" name="email" id="email" required>
+        <br><br>
 
-<br>
+        <label for="password">Mot de passe :</label><br>
+        <input type="password" name="password" id="password" minlength="6" required>
+        <br><br>
 
-<a href="index.php?action=login">Retour connexion</a>
+        <button type="submit">Créer le compte</button>
+    </form>
+
+</body>
+</html>
