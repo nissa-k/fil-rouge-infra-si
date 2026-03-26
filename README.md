@@ -39,7 +39,8 @@ journalisation des actions (audit_logs)
 fil-rouge-infra-si/
 │
 ├── config/
-│   └── database.php
+│   ├── database.php
+│   └── filrouge.sql
 │
 ├── controllers/
 │   └── AuthController.php
@@ -47,6 +48,16 @@ fil-rouge-infra-si/
 ├── helpers/
 │   ├── audit.php
 │   └── flash.php
+│
+├── logs/
+│   └── audit.log
+│
+├── models/
+│   └── User.php
+│
+├── public/
+│   └── css/
+│       └── style.css
 │
 ├── services/
 │   ├── AuthService.php
@@ -57,10 +68,9 @@ fil-rouge-infra-si/
 │   ├── admin/
 │   │   ├── dashboard.php
 │   │   ├── edit_ticket.php
-│   │   ├── ticket_detail.php
 │   │   ├── tickets_en_cours.php
-│   │   ├── tickets_traites.php
 │   │   ├── tickets_refuses.php
+│   │   ├── tickets_traites.php
 │   │   └── users.php
 │   │
 │   ├── auth/
@@ -68,11 +78,12 @@ fil-rouge-infra-si/
 │   │   └── register.php
 │   │
 │   └── client/
-│       ├── dashboard.php
 │       ├── create_ticket.php
-│       └── my_tickets.php
+│       ├── dashboard.php
+│       ├── my_tickets.php
 │
-└── index.php
+├── index.php
+└── README.md
 
 
 
