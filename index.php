@@ -1,12 +1,35 @@
 <?php
 
+error_reporting(E_ALL);
+ini_set('display_errors', '0');
+ini_set('display_startup_errors', '0');
+ini_set('log_errors', '1');
+
+set_exception_handler(function ($e) {
+    require_once __DIR__ . '/helpers/flash.php';
+    setFlash('error', 'Une erreur est survenue. Merci de réessayer.');
+    header('Location: index.php?action=login');
+    exit;
+});
+
+register_shutdown_function(function () {
+    $error = error_get_last();
+
+    if ($error !== null) {
+        require_once __DIR__ . '/helpers/flash.php';
+        setFlash('error', 'Une erreur technique est survenue.');
+        header('Location: index.php?action=login');
+        exit;
+    }
+});
+
 require_once __DIR__ . '/controllers/AuthController.php';
 require_once __DIR__ . '/helpers/flash.php';
+require_once __DIR__ . '/helpers/audit.php';
 
 $action = $_GET['action'] ?? 'login';
 
 $authController = new AuthController();
-
 switch ($action) {
     case 'login':
         $authController->showLogin();
@@ -61,8 +84,8 @@ switch ($action) {
         }
 
         if ($_SESSION['role'] !== 'admin') {
-            header("Location: index.php?action=client_dashboard");
-            exit;
+        header("Location: index.php?action=client_dashboard");
+        exit;
         }
 
         require_once __DIR__ . '/config/database.php';
@@ -72,15 +95,16 @@ switch ($action) {
 
         $id = $_GET['id'] ?? null;
 
-        if ($id) {
-            $query = "UPDATE tickets SET status = 'traitee', updated_at = NOW() WHERE id = :id";
-            $stmt = $pdo->prepare($query);
-            $stmt->execute(['id' => $id]);
-        }
+    if ($id) {
+        $query = "UPDATE tickets SET status = 'traitee', updated_at = NOW() WHERE id = :id";
+        $stmt = $pdo->prepare($query);
+        $stmt->execute(['id' => $id]);
 
-        header("Location: index.php?action=tickets_en_cours");
-        exit;
+        logAction($_SESSION['user_id'], 'update_status', 'ticket', $id);
+    }
 
+    header("Location: index.php?action=tickets_en_cours");
+    exit;
     case 'refuser':
         session_start();
 
@@ -105,6 +129,8 @@ switch ($action) {
             $query = "UPDATE tickets SET status = 'refusee', updated_at = NOW() WHERE id = :id";
             $stmt = $pdo->prepare($query);
             $stmt->execute(['id' => $id]);
+
+            logAction($_SESSION['user_id'], 'update_status', 'ticket', $id);
         }
 
         header("Location: index.php?action=tickets_en_cours");
@@ -135,6 +161,7 @@ switch ($action) {
             $stmt = $pdo->prepare($query);
             $stmt->execute(['id' => $id]);
         }
+        logAction($_SESSION['user_id'], 'delete', 'ticket', $id);
 
         header("Location: index.php?action=tickets_en_cours");
         exit;
@@ -167,6 +194,8 @@ switch ($action) {
             $deleteUser = "DELETE FROM users WHERE id = :id";
             $stmtUser = $pdo->prepare($deleteUser);
             $stmtUser->execute(['id' => $id]);
+
+            logAction($_SESSION['user_id'], 'delete', 'user', $id);
         }
 
         header("Location: index.php?action=users");
@@ -234,6 +263,11 @@ switch ($action) {
             'description' => $description,
             'priority' => $priority
         ]);
+        require_once __DIR__ . '/helpers/audit.php';
+
+        $ticketId = $pdo->lastInsertId();
+
+        logAction($_SESSION['user_id'], 'create', 'ticket', $ticketId);
 
         setFlash('success', 'Requête créée avec succès.');
         header("Location: index.php?action=my_tickets");

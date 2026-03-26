@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../services/AuthService.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../helpers/flash.php';
+require_once __DIR__ . '/../helpers/audit.php';
 
 class AuthController
 {
@@ -44,6 +45,8 @@ class AuthController
         $_SESSION['user_email'] = $user['email'];
         $_SESSION['role'] = $user['role_name'];
 
+        logAction((int)$user['id'], 'login', 'user', (int)$user['id']);
+
         if ($user['role_name'] === 'admin') {
             header("Location: index.php?action=dashboard");
             exit;
@@ -56,6 +59,12 @@ class AuthController
     public function logout()
     {
         session_start();
+
+        $userId = $_SESSION['user_id'] ?? null;
+        if ($userId) {
+            logAction((int)$userId, 'logout', 'user', (int)$userId);
+        }
+
         session_unset();
         session_destroy();
 
@@ -65,6 +74,8 @@ class AuthController
 
     public function register()
     {
+        session_start();
+
         $db = new Database();
         $pdo = $db->getConnection();
 
@@ -118,13 +129,16 @@ class AuthController
             'full_name' => $full_name
         ]);
 
-        $userId = $pdo->lastInsertId();
+        $userId = (int)$pdo->lastInsertId();
 
-        $roleQuery = "INSERT INTO user_roles (user_id, role_id) VALUES (:user_id, 2)";
+        $roleQuery = "INSERT INTO user_roles (user_id, role_id) VALUES (:user_id, :role_id)";
         $roleStmt = $pdo->prepare($roleQuery);
         $roleStmt->execute([
-            'user_id' => $userId
+            'user_id' => $userId,
+            'role_id' => 2
         ]);
+
+        logAction($userId, 'register', 'user', $userId);
 
         setFlash('success', 'Compte créé avec succès. Vous pouvez vous connecter.');
         header("Location: index.php?action=login");
