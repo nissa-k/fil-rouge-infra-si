@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Gestion des tickets</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<h1>Gestion des tickets</h1>
+
+<a href="dashboard-admin.html">Retour dashboard</a>
+
+<div id="ticketsContainer"></div>
+
+<script src="js/api.js"></script>
+<script src="js/guard.js"></script>
+<script>
+requireAuth("admin");
+</script>
+
+<script src="js/admin.js"></script>
+
+</body>
+</html>

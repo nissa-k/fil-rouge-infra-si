@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Admin</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <h1>Dashboard Admin</h1>
+
+    <div class="dashboard-grid">
+        <a class="dash-card" href="tickets-admin.html?status=en_cours">Requêtes en cours</a>
+        <a class="dash-card" href="tickets-admin.html?status=traitee">Requêtes traitées</a>
+        <a class="dash-card" href="tickets-admin.html?status=refusee">Requêtes refusées</a>
+        <a class="dash-card" href="tickets-admin.html">Modifier / gérer requêtes</a>
+        <a class="dash-card" href="users.html">Gérer utilisateurs</a>
+        <button class="dash-card logout-btn" onclick="logout()">Logout</button>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/guard.js"></script>
+    <script>
+        requireAuth("admin");
+
+        async function logout() {
+            try {
+                const result = await apiFetch("/api/logout", {
+                    method: "POST"
+                });
+
+                if (result.success) {
+                    window.location.href = "login.html";
+                } else {
+                    alert(result.message || "Erreur lors de la déconnexion.");
+                }
+            } catch (error) {
+                console.error("Erreur logout :", error);
+                alert("Erreur réseau lors de la déconnexion.");
+            }
+        }
+    </script>
+</body>
+</html>

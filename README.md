@@ -26,6 +26,8 @@ voir les requêtes
 traiter ou refuser une requête
 modifier ou supprimer une requête
 gérer les utilisateurs
+
+
 consulter les logs d’audit
 Sécurité
 mots de passe hashés

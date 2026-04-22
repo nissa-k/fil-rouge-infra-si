@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mes requêtes</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <h1>Mes requêtes</h1>
+
+    <p><a href="dashboard-client.html">Retour dashboard</a></p>
+
+    <div id="myTickets"></div>
+
+    <script src="js/api.js"></script>
+    <script src="js/guard.js"></script>
+    <script>
+        requireAuth("user");
+    </script>
+    <script src="js/client.js"></script>
+</body>
+</html>

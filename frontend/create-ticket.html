@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Créer une requête</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <h1>Créer une requête</h1>
+
+    <p><a href="dashboard-client.html">Retour dashboard</a></p>
+
+    <form id="ticketForm">
+        <input type="text" id="title" placeholder="Titre" required>
+
+        <textarea id="description" placeholder="Description" required></textarea>
+
+        <select id="priority" required>
+            <option value="">Choisir une priorité</option>
+            <option value="low">Faible</option>
+            <option value="medium">Moyenne</option>
+            <option value="high">Haute</option>
+        </select>
+
+        <button type="submit">Créer la requête</button>
+    </form>
+
+    <p id="message"></p>
+
+    <script src="js/api.js"></script>
+    <script src="js/guard.js"></script>
+    <script>
+        requireAuth("user");
+    </script>
+    <script src="js/client.js"></script>
+</body>
+</html>

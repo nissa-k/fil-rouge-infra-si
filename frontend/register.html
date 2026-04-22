@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Créer un compte</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div class="login-container">
+        <h1>Créer un compte</h1>
+
+        <form id="registerForm">
+            <input type="text" id="full_name" placeholder="Nom complet" required>
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="password" placeholder="Mot de passe" required>
+            <button type="submit">Créer un compte</button>
+        </form>
+
+        <p id="error"></p>
+
+        <p class="auth-link">
+            Déjà un compte ?
+            <a href="login.html">Se connecter</a>
+        </p>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/register.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/public-guard.js"></script>
+    <script>
+        redirectIfLoggedIn();
+    </script>
+    <script src="js/register.js"></script>
+</body>
+</html>
