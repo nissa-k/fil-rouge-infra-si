@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Créer utilisateur</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<h1>Créer un utilisateur</h1>
+<a href="dashboard-admin.html">Retour dashboard</a>
+
+<form id="createUserForm">
+    <input type="text" id="first_name" placeholder="Prénom" required>
+    <input type="text" id="last_name" placeholder="Nom" required>
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Mot de passe" required>
+
+    <select id="role">
+        <option value="user">Utilisateur</option>
+        <option value="admin">Admin</option>
+    </select>
+
+    <button type="submit">Créer</button>
+</form>
+
+<p id="msg"></p>
+
+<script>
+const form = document.getElementById("createUserForm");
+
+form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const data = {
+        first_name: document.getElementById("first_name").value,
+        last_name: document.getElementById("last_name").value,
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value,
+        role: document.getElementById("role").value
+    };
+
+    const res = await fetch("http://localhost/fil-rouge-infra-si/backend/public/index.php/api/admin/users/create", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+    });
+
+    const result = await res.json();
+
+    document.getElementById("msg").innerText = result.message;
+});
+</script>
+
+</body>
+</html>

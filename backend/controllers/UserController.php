@@ -1,81 +1,87 @@
 <?php
 
+require_once __DIR__ . '/../models/User.php';
 require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../helpers/audit.php';
 
-class UserController
-{
-    private PDO $pdo;
+class UserController {
 
-    public function __construct()
-    {
-        $db = new Database();
-        $this->pdo = $db->getConnection();
+    // 🔥 GET ALL USERS
+    public function index() {
+        try {
+            $db = Database::getConnection();
+
+            $stmt = $db->query("SELECT id, full_name, email, role FROM users ORDER BY id DESC");
+
+            $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            echo json_encode([
+                "success" => true,
+                "users" => $users
+            ]);
+
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode([
+                "success" => false,
+                "message" => "Erreur serveur",
+                "error" => $e->getMessage()
+            ]);
+        }
     }
 
-    private function jsonResponse(array $data, int $statusCode = 200): void
-    {
-        http_response_code($statusCode);
-        echo json_encode($data, JSON_UNESCAPED_UNICODE);
-        exit;
-    }
+    // 🔥 CREATE USER
+    public function create() {
 
-    public function index(): void
-    {
-        $sql = "
-            SELECT 
-                u.id,
-                u.full_name,
-                u.email,
-                u.is_active,
-                u.created_at,
-                r.name AS role_name
-            FROM users u
-            LEFT JOIN user_roles ur ON ur.user_id = u.id
-            LEFT JOIN roles r ON r.id = ur.role_id
-            ORDER BY u.id DESC
-        ";
+        $data = json_decode(file_get_contents("php://input"), true);
 
-        $stmt = $this->pdo->query($sql);
-        $users = $stmt->fetchAll();
+        $firstName = trim($data['first_name'] ?? '');
+        $lastName = trim($data['last_name'] ?? '');
+        $email = trim($data['email'] ?? '');
+        $role = $data['role'] ?? 'user';
 
-        $this->jsonResponse([
-            'success' => true,
-            'users' => $users
+        if (!$firstName || !$lastName || !$email) {
+            echo json_encode([
+                "success" => false,
+                "message" => "Champs requis manquants"
+            ]);
+            return;
+        }
+
+        $db = Database::getConnection();
+
+        $fullName = $firstName . ' ' . $lastName;
+
+        // 🔥 mot de passe par défaut
+        $defaultPassword = "123456";
+
+        $stmt = $db->prepare("
+            INSERT INTO users (full_name, email, password_hash, must_change_password, role)
+            VALUES (?, ?, ?, 1, ?)
+        ");
+
+        $stmt->execute([
+            $fullName,
+            $email,
+            password_hash($defaultPassword, PASSWORD_DEFAULT),
+            $role
+        ]);
+
+        echo json_encode([
+            "success" => true,
+            "message" => "Utilisateur créé"
         ]);
     }
 
-    public function delete(int $id): void
-    {
-        $currentUserId = $_SESSION['user']['id'] ?? null;
+    // 🔥 DELETE USER
+    public function delete($id) {
+        $db = Database::getConnection();
 
-        if (!$currentUserId) {
-            $this->jsonResponse([
-                'success' => false,
-                'message' => 'Non authentifié.'
-            ], 401);
-        }
+        $stmt = $db->prepare("DELETE FROM users WHERE id = ?");
+        $stmt->execute([$id]);
 
-        if ((int)$id === (int)$currentUserId) {
-            $this->jsonResponse([
-                'success' => false,
-                'message' => 'Vous ne pouvez pas supprimer votre propre compte.'
-            ], 400);
-        }
-
-        $deleteRoles = "DELETE FROM user_roles WHERE user_id = :id";
-        $stmtRoles = $this->pdo->prepare($deleteRoles);
-        $stmtRoles->execute(['id' => $id]);
-
-        $deleteUser = "DELETE FROM users WHERE id = :id";
-        $stmtUser = $this->pdo->prepare($deleteUser);
-        $stmtUser->execute(['id' => $id]);
-
-        logAction((int)$currentUserId, 'delete', 'user', $id);
-
-        $this->jsonResponse([
-            'success' => true,
-            'message' => 'Utilisateur supprimé avec succès.'
+        echo json_encode([
+            "success" => true,
+            "message" => "Utilisateur supprimé"
         ]);
     }
 }

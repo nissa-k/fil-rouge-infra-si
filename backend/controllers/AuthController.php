@@ -1,212 +1,120 @@
 <?php
 
-require_once __DIR__ . '/../services/AuthService.php';
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../helpers/audit.php';
+require_once __DIR__ . '/../models/User.php';
+require_once __DIR__ . '/../config/Database.php';
 
-class AuthController
-{
-    private AuthService $authService;
+class AuthController {
 
-    public function __construct()
-    {
-        $this->authService = new AuthService();
-    }
+    public function login() {
 
-    private function jsonResponse(array $data, int $statusCode = 200): void
-    {
-        http_response_code($statusCode);
-        echo json_encode($data, JSON_UNESCAPED_UNICODE);
-        exit;
-    }
+        ini_set('display_errors', 0);
 
-    private function getJsonInput(): array
-    {
-        $raw = file_get_contents('php://input');
-        $data = json_decode($raw, true);
-
-        return is_array($data) ? $data : [];
-    }
-
-    public function login(): void
-    {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        $data = $this->getJsonInput();
+        $data = json_decode(file_get_contents("php://input"), true);
 
         $email = trim($data['email'] ?? '');
         $password = $data['password'] ?? '';
 
-        if ($email === '' || $password === '') {
-            $this->jsonResponse([
-                'success' => false,
-                'message' => 'Tous les champs sont obligatoires.'
-            ], 400);
+        if (!$email || !$password) {
+            echo json_encode([
+                "success" => false,
+                "message" => "Champs requis manquants."
+            ]);
+            return;
         }
 
-        $user = $this->authService->login($email, $password);
+        $userModel = new User();
+        $user = $userModel->findByEmail($email);
 
-        if (!$user) {
-            $this->jsonResponse([
-                'success' => false,
-                'message' => 'Email ou mot de passe incorrect.'
-            ], 401);
+        if (!$user || !password_verify($password, $user['password_hash'])) {
+            echo json_encode([
+                "success" => false,
+                "message" => "Email ou mot de passe incorrect."
+            ]);
+            return;
         }
+
+        // 🔥 ROLE FIX
+        $role = $user['role'] ?? (
+            $user['email'] === 'admin@test.com' ? 'admin' : 'user'
+        );
 
         $_SESSION['user'] = [
-            'id' => (int) $user['id'],
-            'name' => $user['full_name'],
-            'email' => $user['email'],
-            'role' => $user['role_name']
+            "id" => $user['id'],
+            "name" => $user['full_name'],
+            "email" => $user['email'],
+            "role" => $role
         ];
 
-        logAction((int) $user['id'], 'login', 'user', (int) $user['id']);
-
-        $this->jsonResponse([
-            'success' => true,
-            'message' => 'Connexion réussie.',
-            'user' => $_SESSION['user']
+        echo json_encode([
+            "success" => true,
+            "user" => $_SESSION['user'],
+            "force_password_change" => isset($user['must_change_password']) 
+                ? (bool)$user['must_change_password'] 
+                : false
         ]);
     }
 
-    public function logout(): void
-    {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        $userId = $_SESSION['user']['id'] ?? null;
-
-        if ($userId) {
-            logAction((int) $userId, 'logout', 'user', (int) $userId);
-        }
-
-        $_SESSION = [];
-
-        if (ini_get('session.use_cookies')) {
-            $params = session_get_cookie_params();
-            setcookie(
-                session_name(),
-                '',
-                time() - 42000,
-                $params['path'],
-                $params['domain'],
-                $params['secure'],
-                $params['httponly']
-            );
-        }
-
+    public function logout() {
         session_destroy();
 
-        $this->jsonResponse([
-            'success' => true,
-            'message' => 'Déconnexion réussie.'
+        echo json_encode([
+            "success" => true
         ]);
     }
 
-    public function register(): void
-    {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        $data = $this->getJsonInput();
-
-        $full_name = trim($data['full_name'] ?? '');
-        $email = trim($data['email'] ?? '');
-        $passwordPlain = $data['password'] ?? '';
-
-        if ($full_name === '' || $email === '' || $passwordPlain === '') {
-            $this->jsonResponse([
-                'success' => false,
-                'message' => 'Tous les champs sont obligatoires.'
-            ], 400);
-        }
-
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $this->jsonResponse([
-                'success' => false,
-                'message' => 'Email invalide.'
-            ], 400);
-        }
-
-        if (mb_strlen($full_name) > 100) {
-            $this->jsonResponse([
-                'success' => false,
-                'message' => 'Le nom complet ne doit pas dépasser 100 caractères.'
-            ], 400);
-        }
-
-        if (mb_strlen($passwordPlain) < 6) {
-            $this->jsonResponse([
-                'success' => false,
-                'message' => 'Le mot de passe doit contenir au moins 6 caractères.'
-            ], 400);
-        }
-
-        $db = new Database();
-        $pdo = $db->getConnection();
-
-        $checkQuery = 'SELECT id FROM users WHERE email = :email LIMIT 1';
-        $checkStmt = $pdo->prepare($checkQuery);
-        $checkStmt->execute([
-            'email' => $email
-        ]);
-
-        if ($checkStmt->fetch()) {
-            $this->jsonResponse([
-                'success' => false,
-                'message' => 'Cet email existe déjà.'
-            ], 409);
-        }
-
-        $passwordHash = password_hash($passwordPlain, PASSWORD_DEFAULT);
-
-        $query = 'INSERT INTO users (email, password_hash, full_name, is_active, created_at)
-                  VALUES (:email, :password_hash, :full_name, 1, NOW())';
-
-        $stmt = $pdo->prepare($query);
-        $stmt->execute([
-            'email' => $email,
-            'password_hash' => $passwordHash,
-            'full_name' => $full_name
-        ]);
-
-        $userId = (int) $pdo->lastInsertId();
-
-        $roleQuery = 'INSERT INTO user_roles (user_id, role_id) VALUES (:user_id, :role_id)';
-        $roleStmt = $pdo->prepare($roleQuery);
-        $roleStmt->execute([
-            'user_id' => $userId,
-            'role_id' => 2
-        ]);
-
-        logAction($userId, 'register', 'user', $userId);
-
-        $this->jsonResponse([
-            'success' => true,
-            'message' => 'Compte créé avec succès. Vous pouvez vous connecter.'
-        ], 201);
-    }
-
-    public function me(): void
-    {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+    public function me() {
 
         if (!isset($_SESSION['user'])) {
-            $this->jsonResponse([
-                'success' => false,
-                'message' => 'Non authentifié.'
-            ], 401);
+            http_response_code(401);
+            echo json_encode([
+                "success" => false
+            ]);
+            return;
         }
 
-        $this->jsonResponse([
-            'success' => true,
-            'user' => $_SESSION['user']
+        echo json_encode([
+            "success" => true,
+            "user" => $_SESSION['user']
+        ]);
+    }
+
+    public function changePassword() {
+
+        if (!isset($_SESSION['user'])) {
+            http_response_code(401);
+            echo json_encode([
+                "success" => false
+            ]);
+            return;
+        }
+
+        $data = json_decode(file_get_contents("php://input"), true);
+        $newPassword = $data['password'] ?? '';
+
+        if (strlen($newPassword) < 6) {
+            echo json_encode([
+                "success" => false,
+                "message" => "Mot de passe trop court"
+            ]);
+            return;
+        }
+
+        $db = Database::getConnection();
+
+        $stmt = $db->prepare("
+            UPDATE users 
+            SET password_hash = ?, must_change_password = 0 
+            WHERE id = ?
+        ");
+
+        $stmt->execute([
+            password_hash($newPassword, PASSWORD_DEFAULT),
+            $_SESSION['user']['id']
+        ]);
+
+        echo json_encode([
+            "success" => true,
+            "message" => "Mot de passe changé"
         ]);
     }
 }

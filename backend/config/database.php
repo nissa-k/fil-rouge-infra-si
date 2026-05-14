@@ -1,40 +1,12 @@
 <?php
 
-class Database
-{
-    private string $host = '127.0.0.1';
-    private string $dbName = 'filrouge';
-    private string $username = 'root';
-    private string $password = '';
-    private ?PDO $connection = null;
+class Database {
 
-    public function getConnection(): PDO
-    {
-        if ($this->connection instanceof PDO) {
-            return $this->connection;
-        }
-
-        try {
-            $dsn = "mysql:host={$this->host};dbname={$this->dbName};charset=utf8mb4";
-
-            $this->connection = new PDO(
-                $dsn,
-                $this->username,
-                $this->password,
-                [
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_EMULATE_PREPARES => false,
-                ]
-            );
-
-            return $this->connection;
-        } catch (PDOException $e) {
-            http_response_code(500);
-            die(json_encode([
-                'success' => false,
-                'message' => 'Erreur de connexion à la base de données.'
-            ], JSON_UNESCAPED_UNICODE));
-        }
+    public static function getConnection() {
+        return new PDO(
+            "mysql:host=localhost;dbname=filrouge;charset=utf8",
+            "root",
+            ""
+        );
     }
 }

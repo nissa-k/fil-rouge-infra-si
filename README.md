@@ -113,3 +113,40 @@ créer la base de données filrouge ou importer le fichier SQL
 ouvrir dans le navigateur :
 
 http://localhost/FIL-ROUGE-INFRA-SI
+
+
+
+
+## Déploiement sur deux serveurs
+
+### Frontend
+Modifier le fichier :
+
+frontend/js/api.js
+
+et remplacer :
+
+const API_BASE = "https://URL_DU_BACKEND_ICI";
+
+par l’URL réelle du backend.
+
+### Backend
+Modifier le fichier :
+
+backend/public/index.php
+
+et remplacer :
+
+https://URL_DU_FRONTEND_ICI
+
+par l’URL réelle du frontend.
+
+### Base de données
+Modifier :
+
+backend/config/database.php
+
+avec les identifiants MySQL du serveur.
+
+### Important
+Si le frontend et le backend sont sur deux domaines différents, HTTPS est nécessaire pour que les sessions PHP fonctionnent correctement avec les cookies.

@@ -29,91 +29,92 @@ $ticketController = new TicketController();
 $userController = new UserController();
 $clientTicketController = new ClientTicketController();
 
-/* AUTH */
+/* ================= AUTH ================= */
 
 if ($uri === '/api/login' && $method === 'POST') {
     $authController->login();
-}
-
-if ($uri === '/api/register' && $method === 'POST') {
-    $authController->register();
+    exit;
 }
 
 if ($uri === '/api/logout' && $method === 'POST') {
     AuthMiddleware::handle();
     $authController->logout();
+    exit;
 }
 
 if ($uri === '/api/me' && $method === 'GET') {
     AuthMiddleware::handle();
     $authController->me();
+    exit;
 }
 
-/* CLIENT */
+if ($uri === '/api/change-password' && $method === 'POST') {
+    AuthMiddleware::handle();
+    $authController->changePassword();
+    exit;
+}
+
+/* ================= CLIENT ================= */
 
 if ($uri === '/api/client/tickets' && $method === 'GET') {
     AuthMiddleware::handle();
     RoleMiddleware::handle('user');
     $clientTicketController->myTickets();
+    exit;
 }
 
 if ($uri === '/api/client/tickets' && $method === 'POST') {
     AuthMiddleware::handle();
     RoleMiddleware::handle('user');
     $clientTicketController->create();
+    exit;
 }
 
-/* ADMIN TICKETS */
+/* ================= ADMIN TICKETS ================= */
 
 if ($uri === '/api/admin/tickets' && $method === 'GET') {
     AuthMiddleware::handle();
     RoleMiddleware::handle('admin');
     $ticketController->index();
+    exit;
 }
 
-if (preg_match('#^/api/admin/tickets/(\d+)$#', $uri, $matches) && $method === 'GET') {
+if (preg_match('#^/api/admin/tickets/(\d+)$#', $uri, $m) && $method === 'DELETE') {
     AuthMiddleware::handle();
     RoleMiddleware::handle('admin');
-    $ticketController->show((int) $matches[1]);
+    $ticketController->delete((int)$m[1]);
+    exit;
 }
 
-if (preg_match('#^/api/admin/tickets/(\d+)$#', $uri, $matches) && $method === 'PUT') {
-    AuthMiddleware::handle();
-    RoleMiddleware::handle('admin');
-    $ticketController->update((int) $matches[1]);
-}
-
-if (preg_match('#^/api/admin/tickets/(\d+)/status$#', $uri, $matches) && $method === 'PUT') {
-    AuthMiddleware::handle();
-    RoleMiddleware::handle('admin');
-    $ticketController->updateStatus((int) $matches[1]);
-}
-
-if (preg_match('#^/api/admin/tickets/(\d+)$#', $uri, $matches) && $method === 'DELETE') {
-    AuthMiddleware::handle();
-    RoleMiddleware::handle('admin');
-    $ticketController->delete((int) $matches[1]);
-}
-
-/* ADMIN USERS */
+/* ================= ADMIN USERS ================= */
 
 if ($uri === '/api/admin/users' && $method === 'GET') {
     AuthMiddleware::handle();
     RoleMiddleware::handle('admin');
     $userController->index();
+    exit;
 }
 
-if (preg_match('#^/api/admin/users/(\d+)$#', $uri, $matches) && $method === 'DELETE') {
+if (preg_match('#^/api/admin/users/(\d+)$#', $uri, $m) && $method === 'DELETE') {
     AuthMiddleware::handle();
     RoleMiddleware::handle('admin');
-    $userController->delete((int) $matches[1]);
+    $userController->delete((int)$m[1]);
+    exit;
 }
+
+/* 🔥 CREATE USER (IMPORTANT) */
+
+if ($uri === '/api/admin/create-user' && $method === 'POST') {
+    AuthMiddleware::handle();
+    RoleMiddleware::handle('admin');
+    $authController->createUser();
+    exit;
+}
+
+/* ================= 404 ================= */
 
 http_response_code(404);
 echo json_encode([
     'success' => false,
-    'message' => 'Route non trouvée.',
-    'uri' => $uri,
-    'method' => $method
-], JSON_UNESCAPED_UNICODE);
-exit;
+    'message' => 'Route non trouvée'
+]);

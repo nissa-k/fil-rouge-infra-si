@@ -5,7 +5,6 @@ require_once __DIR__ . '/../config/database.php';
 function logAction($userId, $action, $entity = null, $entityId = null): void
 {
     try {
-
         $db = new Database();
         $pdo = $db->getConnection();
 
@@ -19,7 +18,6 @@ function logAction($userId, $action, $entity = null, $entityId = null): void
         ";
 
         $stmt = $pdo->prepare($query);
-
         $stmt->execute([
             'user_id' => $userId,
             'action' => $action,
@@ -28,11 +26,7 @@ function logAction($userId, $action, $entity = null, $entityId = null): void
             'ip' => $ip,
             'user_agent' => $userAgent
         ]);
-
     } catch (Throwable $e) {
-
-        // On évite de casser l'application si le log échoue
         error_log("Erreur audit log : " . $e->getMessage());
-
     }
 }

@@ -81,7 +81,7 @@ class TicketController
 
         $adminId = $_SESSION['user']['id'] ?? null;
         if ($adminId) {
-            logAction((int)$adminId, 'update', 'ticket', $id);
+            logAction((int) $adminId, 'update', 'ticket', $id);
         }
 
         $this->jsonResponse([
@@ -113,7 +113,7 @@ class TicketController
 
         $adminId = $_SESSION['user']['id'] ?? null;
         if ($adminId) {
-            logAction((int)$adminId, 'update_status', 'ticket', $id);
+            logAction((int) $adminId, 'update_status', 'ticket', $id);
         }
 
         $this->jsonResponse([
@@ -135,7 +135,7 @@ class TicketController
 
         $adminId = $_SESSION['user']['id'] ?? null;
         if ($adminId) {
-            logAction((int)$adminId, 'delete', 'ticket', $id);
+            logAction((int) $adminId, 'delete', 'ticket', $id);
         }
 
         $this->jsonResponse([
