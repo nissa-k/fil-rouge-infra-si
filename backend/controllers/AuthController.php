@@ -3,14 +3,17 @@
 require_once __DIR__ . '/../models/User.php';
 require_once __DIR__ . '/../config/Database.php';
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
 class AuthController {
 
     // =========================
     // LOGIN
     // =========================
     public function login() {
-
-        ini_set('display_errors', 0);
 
         $data = json_decode(file_get_contents("php://input"), true);
 
@@ -43,27 +46,18 @@ class AuthController {
             return;
         }
 
-        // ROLE
-        $role = $user['role'] ?? (
-            $user['email'] === 'admin@test.com'
-                ? 'admin'
-                : 'user'
-        );
-
         $_SESSION['user'] = [
             "id" => $user['id'],
             "name" => $user['full_name'],
             "email" => $user['email'],
-            "role" => $role
+            "role" => $user['role']
         ];
 
         echo json_encode([
             "success" => true,
             "user" => $_SESSION['user'],
             "force_password_change" =>
-                isset($user['must_change_password'])
-                    ? (bool)$user['must_change_password']
-                    : false
+                (bool)$user['must_change_password']
         ]);
     }
 
@@ -111,8 +105,7 @@ class AuthController {
             http_response_code(401);
 
             echo json_encode([
-                "success" => false,
-                "message" => "Non authentifié"
+                "success" => false
             ]);
 
             return;
@@ -122,18 +115,6 @@ class AuthController {
 
         $newPassword = trim($data['password'] ?? '');
 
-        // Vérifie vide
-        if (empty($newPassword)) {
-
-            echo json_encode([
-                "success" => false,
-                "message" => "Mot de passe requis"
-            ]);
-
-            return;
-        }
-
-        // Vérifie longueur
         if (strlen($newPassword) < 6) {
 
             echo json_encode([
@@ -146,7 +127,6 @@ class AuthController {
 
         $db = Database::getConnection();
 
-        // 🔥 récupère ancien mdp
         $stmt = $db->prepare("
             SELECT password_hash
             FROM users
@@ -156,6 +136,71 @@ class AuthController {
         $stmt->execute([
             $_SESSION['user']['id']
         ]);
+
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (
+            password_verify(
+                $newPassword,
+                $user['password_hash']
+            )
+        ) {
+
+            echo json_encode([
+                "success" => false,
+                "message" => "Le nouveau mot de passe doit être différent"
+            ]);
+
+            return;
+        }
+
+        $update = $db->prepare("
+            UPDATE users
+            SET
+                password_hash = ?,
+                must_change_password = 0
+            WHERE id = ?
+        ");
+
+        $update->execute([
+            password_hash($newPassword, PASSWORD_DEFAULT),
+            $_SESSION['user']['id']
+        ]);
+
+        echo json_encode([
+            "success" => true,
+            "message" => "Mot de passe changé"
+        ]);
+    }
+
+    // =========================
+    // FORGOT PASSWORD
+    // =========================
+    public function forgotPassword() {
+
+        $data = json_decode(file_get_contents("php://input"), true);
+
+        $email = trim($data['email'] ?? '');
+
+        if (!$email) {
+
+            echo json_encode([
+                "success" => false,
+                "message" => "Email requis"
+            ]);
+
+            return;
+        }
+
+        $db = Database::getConnection();
+
+        $stmt = $db->prepare("
+            SELECT *
+            FROM users
+            WHERE email = ?
+        ");
+
+        $stmt->execute([$email]);
 
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -169,45 +214,136 @@ class AuthController {
             return;
         }
 
-        // 🔥 interdit même mot de passe
-        if (
-            password_verify(
-                $newPassword,
-                $user['password_hash']
-            )
-        ) {
+        $token = bin2hex(random_bytes(32));
+
+        $save = $db->prepare("
+            UPDATE users
+            SET reset_token = ?
+            WHERE id = ?
+        ");
+
+        $save->execute([
+            $token,
+            $user['id']
+        ]);
+
+        $resetLink =
+            "http://localhost/fil-rouge-infra-si/frontend/reset-password.html?token="
+            . $token;
+
+        $mail = new PHPMailer(true);
+
+        try {
+
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com';
+            $mail->SMTPAuth = true;
+
+            // 🔥 TON GMAIL
+            $mail->Username = 'safouzemmar@gmail.com';
+
+            // 🔥 TON APP PASSWORD
+            $mail->Password = 'evpkkongbkjvkjuz ';
+
+            $mail->SMTPSecure = 'tls';
+            $mail->Port = 587;
+
+            $mail->setFrom(
+                'TONMAIL@gmail.com',
+                'Fil Rouge'
+            );
+
+            $mail->addAddress($email);
+
+            $mail->isHTML(true);
+
+            $mail->Subject = 'Réinitialisation mot de passe';
+
+            $mail->Body = "
+                <h2>Réinitialisation</h2>
+
+                <p>
+                    Cliquez ici :
+                </p>
+
+                <a href='$resetLink'>
+                    Réinitialiser mon mot de passe
+                </a>
+            ";
+
+            $mail->send();
+
+            echo json_encode([
+                "success" => true,
+                "message" => "Email envoyé"
+            ]);
+
+        } catch (Exception $e) {
 
             echo json_encode([
                 "success" => false,
-                "message" => "Le nouveau mot de passe doit être différent de l'ancien"
+                "message" => $mail->ErrorInfo
+            ]);
+        }
+    }
+
+    // =========================
+    // RESET PASSWORD
+    // =========================
+    public function resetPassword() {
+
+        $data = json_decode(file_get_contents("php://input"), true);
+
+        $token = $data['token'] ?? '';
+        $password = $data['password'] ?? '';
+
+        if (!$token || !$password) {
+
+            echo json_encode([
+                "success" => false
             ]);
 
             return;
         }
 
-        // Nouveau hash
-        $hashedPassword = password_hash(
-            $newPassword,
-            PASSWORD_DEFAULT
-        );
+        $db = Database::getConnection();
 
-        // UPDATE
+        $stmt = $db->prepare("
+            SELECT *
+            FROM users
+            WHERE reset_token = ?
+        ");
+
+        $stmt->execute([$token]);
+
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$user) {
+
+            echo json_encode([
+                "success" => false,
+                "message" => "Token invalide"
+            ]);
+
+            return;
+        }
+
         $update = $db->prepare("
             UPDATE users
             SET
                 password_hash = ?,
-                must_change_password = 0
+                reset_token = NULL
             WHERE id = ?
         ");
 
         $update->execute([
-            $hashedPassword,
-            $_SESSION['user']['id']
+            password_hash($password, PASSWORD_DEFAULT),
+            $user['id']
         ]);
 
         echo json_encode([
             "success" => true,
-            "message" => "Mot de passe changé"
+            "message" => "Mot de passe réinitialisé"
         ]);
     }
 }
