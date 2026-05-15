@@ -51,6 +51,27 @@ class AuthController {
         }
 
         // =========================
+        // FORCE CHANGE PASSWORD
+        // =========================
+
+        if ((int)$user['must_change_password'] === 1) {
+
+            $_SESSION['user'] = [
+                "id" => $user['id'],
+                "name" => $user['full_name'],
+                "email" => $user['email'],
+                "role" => $user['role']
+            ];
+
+            echo json_encode([
+                "success" => true,
+                "must_change_password" => true
+            ]);
+
+            return;
+        }
+
+        // =========================
         // GENERATE 2FA CODE
         // =========================
 
@@ -84,10 +105,7 @@ class AuthController {
             $mail->Host = 'smtp.gmail.com';
             $mail->SMTPAuth = true;
 
-            // 🔥 TON EMAIL
             $mail->Username = 'safouzemmar@gmail.com';
-
-            // 🔥 APP PASSWORD GOOGLE
             $mail->Password = 'evpkkongbkjvkjuz';
 
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;

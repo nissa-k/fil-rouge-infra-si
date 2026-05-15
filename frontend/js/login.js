@@ -4,8 +4,11 @@ form.addEventListener("submit", async (e) => {
 
     e.preventDefault();
 
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+    const email =
+        document.getElementById("email").value;
+
+    const password =
+        document.getElementById("password").value;
 
     try {
 
@@ -29,21 +32,34 @@ form.addEventListener("submit", async (e) => {
 
         console.log(text);
 
-        // 🔥 évite le crash JSON
-        if (text.startsWith("<")) {
-
-            alert("Erreur PHP backend");
-
-            return;
-        }
-
         const result = JSON.parse(text);
+
+        // =========================
+        // ERREUR
+        // =========================
 
         if (!result.success) {
 
             alert(result.message);
+
             return;
         }
+
+        // =========================
+        // FORCE CHANGE PASSWORD
+        // =========================
+
+        if (result.must_change_password) {
+
+            window.location.href =
+                "change-password.html";
+
+            return;
+        }
+
+        // =========================
+        // 2FA
+        // =========================
 
         if (result.requires_2fa) {
 
@@ -57,6 +73,13 @@ form.addEventListener("submit", async (e) => {
 
             return;
         }
+
+        // =========================
+        // LOGIN NORMAL
+        // =========================
+
+        window.location.href =
+            "dashboard-client.html";
 
     } catch (error) {
 
