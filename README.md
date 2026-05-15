@@ -93,13 +93,13 @@ Comptes de test :
 
 Admin
 
-email : admin@test.com
-mdp : admin123
+email : admin@test.com ou safaazemmar@gmail.com
+mdp : admin123          ou  123456
 
 Client
 
 email : client@test.com
-mdp : client123
+mdp : client123 ou 123456
 
 Installation
 click sur ce lien 

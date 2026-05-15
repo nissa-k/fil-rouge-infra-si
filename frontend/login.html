@@ -1,25 +1,51 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <title>Connexion</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
 
     <div class="login-container">
+
         <h1>Connexion</h1>
 
         <form id="loginForm">
-            <input type="email" id="email" placeholder="Email" required>
-            <input type="password" id="password" placeholder="Mot de passe" required>
-            <button type="submit">Connexion</button>
-            <a href="forgot-password.html"
-                style="color:violet; display:block; margin-top:20px;">
+
+            <input
+                type="email"
+                id="email"
+                placeholder="Email"
+                required
+            >
+
+            <input
+                type="password"
+                id="password"
+                placeholder="Mot de passe"
+                required
+            >
+
+            <button type="submit">
+                Connexion
+            </button>
+
+            <a
+                href="forgot-password.html"
+                style="color:violet; display:block; margin-top:20px;"
+            >
                 Mot de passe oublié ?
             </a>
+
         </form>
+
+    </div>
+
     <script src="js/api.js"></script>
-    <script src="js/login.js"></script>
+    <script src="js/login.js?v=999"></script>
+
 </body>
 </html>

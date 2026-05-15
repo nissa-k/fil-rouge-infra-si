@@ -1,19 +1,19 @@
-const form = document.getElementById("loginForm");
+const form = document.getElementById("verifyForm");
 
 form.addEventListener("submit", async (e) => {
 
     e.preventDefault();
 
-    const email =
-        document.getElementById("email").value;
+    const code =
+        document.getElementById("code").value;
 
-    const password =
-        document.getElementById("password").value;
+    const email =
+        localStorage.getItem("2fa_email");
 
     try {
 
         const response = await fetch(
-            "http://localhost/fil-rouge-infra-si/backend/public/index.php/api/login",
+            "http://localhost/fil-rouge-infra-si/backend/public/index.php/api/verify-2fa",
             {
                 method: "POST",
 
@@ -23,14 +23,15 @@ form.addEventListener("submit", async (e) => {
 
                 body: JSON.stringify({
                     email,
-                    password
+                    code
                 })
             }
         );
 
         const result = await response.json();
 
-        // erreur
+        console.log(result);
+
         if (!result.success) {
 
             alert(result.message);
@@ -38,21 +39,7 @@ form.addEventListener("submit", async (e) => {
             return;
         }
 
-        // 2FA
-        if (result.requires_2fa) {
-
-            localStorage.setItem(
-                "2fa_email",
-                result.email
-            );
-
-            window.location.href =
-                "verify-2fa.html";
-
-            return;
-        }
-
-        // login normal
+        // 🔥 connecté
         window.location.href =
             "dashboard-client.html";
 
