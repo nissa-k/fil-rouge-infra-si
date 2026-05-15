@@ -1,7 +1,6 @@
 <?php
 
 require_once __DIR__ . '/../services/TicketService.php';
-require_once __DIR__ . '/../helpers/audit.php';
 
 class TicketController
 {
@@ -15,17 +14,99 @@ class TicketController
     private function jsonResponse(array $data, int $statusCode = 200): void
     {
         http_response_code($statusCode);
-        echo json_encode($data, JSON_UNESCAPED_UNICODE);
+
+        echo json_encode($data);
+
         exit;
     }
 
     private function getJsonInput(): array
     {
         $raw = file_get_contents('php://input');
+
         $data = json_decode($raw, true);
 
         return is_array($data) ? $data : [];
     }
+
+    // =========================
+    // CREATE CLIENT TICKET
+    // =========================
+
+    public function create(): void
+    {
+        $data = $this->getJsonInput();
+
+        $title = trim($data['title'] ?? '');
+        $description = trim($data['description'] ?? '');
+        $priority = trim($data['priority'] ?? 'medium');
+
+        $userId = $_SESSION['user']['id'] ?? null;
+
+        if (!$userId) {
+
+            $this->jsonResponse([
+                'success' => false,
+                'message' => 'Non connecté'
+            ], 401);
+        }
+
+        if ($title === '' || $description === '') {
+
+            $this->jsonResponse([
+                'success' => false,
+                'message' => 'Tous les champs sont obligatoires.'
+            ], 400);
+        }
+
+        $created = $this->ticketService->create(
+            $userId,
+            $title,
+            $description,
+            $priority
+        );
+
+        if (!$created) {
+
+            $this->jsonResponse([
+                'success' => false,
+                'message' => 'Erreur création ticket'
+            ], 500);
+        }
+
+        $this->jsonResponse([
+            'success' => true,
+            'message' => 'Ticket créé'
+        ]);
+    }
+
+    // =========================
+    // CLIENT TICKETS
+    // =========================
+
+    public function myTickets(): void
+    {
+        $userId = $_SESSION['user']['id'] ?? null;
+
+        if (!$userId) {
+
+            $this->jsonResponse([
+                'success' => false,
+                'message' => 'Non connecté'
+            ], 401);
+        }
+
+        $tickets = $this->ticketService->getByUser($userId);
+
+        $this->jsonResponse([
+            'success' => true,
+            'tickets' => $tickets
+        ]);
+    }
+
+    // =========================
+    // ADMIN ALL TICKETS
+    // =========================
 
     public function index(): void
     {
@@ -37,20 +118,19 @@ class TicketController
         ]);
     }
 
-    public function show(int $id): void
+    public function updateStatus(int $id): void
     {
-        $ticket = $this->ticketService->getById($id);
+        $data = $this->getJsonInput();
 
-        if (!$ticket) {
-            $this->jsonResponse([
-                'success' => false,
-                'message' => 'Ticket introuvable.'
-            ], 404);
-        }
+        $status = $data['status'] ?? '';
+
+        $updated = $this->ticketService->updateStatus(
+            $id,
+            $status
+        );
 
         $this->jsonResponse([
-            'success' => true,
-            'ticket' => $ticket
+            'success' => $updated
         ]);
     }
 
@@ -58,67 +138,16 @@ class TicketController
     {
         $data = $this->getJsonInput();
 
-        $title = trim($data['title'] ?? '');
-        $description = trim($data['description'] ?? '');
-        $priority = $data['priority'] ?? '';
-        $status = $data['status'] ?? '';
-
-        if ($title === '' || $description === '' || $priority === '' || $status === '') {
-            $this->jsonResponse([
-                'success' => false,
-                'message' => 'Tous les champs sont obligatoires.'
-            ], 400);
-        }
-
-        $updated = $this->ticketService->update($id, $title, $description, $priority, $status);
-
-        if (!$updated) {
-            $this->jsonResponse([
-                'success' => false,
-                'message' => 'Échec de mise à jour du ticket.'
-            ], 400);
-        }
-
-        $adminId = $_SESSION['user']['id'] ?? null;
-        if ($adminId) {
-            logAction((int) $adminId, 'update', 'ticket', $id);
-        }
+        $updated = $this->ticketService->update(
+            $id,
+            $data['title'],
+            $data['description'],
+            $data['priority'],
+            $data['status']
+        );
 
         $this->jsonResponse([
-            'success' => true,
-            'message' => 'Ticket mis à jour avec succès.'
-        ]);
-    }
-
-    public function updateStatus(int $id): void
-    {
-        $data = $this->getJsonInput();
-        $status = $data['status'] ?? '';
-
-        if ($status === '') {
-            $this->jsonResponse([
-                'success' => false,
-                'message' => 'Statut obligatoire.'
-            ], 400);
-        }
-
-        $updated = $this->ticketService->updateStatus($id, $status);
-
-        if (!$updated) {
-            $this->jsonResponse([
-                'success' => false,
-                'message' => 'Échec de mise à jour du statut.'
-            ], 400);
-        }
-
-        $adminId = $_SESSION['user']['id'] ?? null;
-        if ($adminId) {
-            logAction((int) $adminId, 'update_status', 'ticket', $id);
-        }
-
-        $this->jsonResponse([
-            'success' => true,
-            'message' => 'Statut mis à jour.'
+            'success' => $updated
         ]);
     }
 
@@ -126,21 +155,8 @@ class TicketController
     {
         $deleted = $this->ticketService->delete($id);
 
-        if (!$deleted) {
-            $this->jsonResponse([
-                'success' => false,
-                'message' => 'Échec de suppression du ticket.'
-            ], 400);
-        }
-
-        $adminId = $_SESSION['user']['id'] ?? null;
-        if ($adminId) {
-            logAction((int) $adminId, 'delete', 'ticket', $id);
-        }
-
         $this->jsonResponse([
-            'success' => true,
-            'message' => 'Ticket supprimé avec succès.'
+            'success' => $deleted
         ]);
     }
 }

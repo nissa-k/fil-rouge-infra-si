@@ -4,218 +4,165 @@ require_once __DIR__ . '/../config/database.php';
 
 class TicketService
 {
-    private PDO $pdo;
+    private PDO $db;
 
     public function __construct()
     {
-        $db = new Database();
-        $this->pdo = $db->getConnection();
+        $this->db = Database::getConnection();
     }
 
-    public function getAll(): array
-    {
-        $sql = "
-            SELECT
-                t.id,
-                t.user_id,
-                t.title,
-                t.description,
-                t.priority,
-                t.status,
-                t.created_at,
-                t.updated_at,
-                u.full_name,
-                u.email
-            FROM tickets t
-            INNER JOIN users u ON t.user_id = u.id
-            ORDER BY t.created_at DESC
-        ";
+    // =========================
+    // CREATE TICKET
+    // =========================
 
-        $stmt = $this->pdo->query($sql);
-        return $stmt->fetchAll();
-    }
+    public function create(
+        int $userId,
+        string $title,
+        string $description,
+        string $priority
+    ): bool {
 
-    public function getByStatus(string $status): array
-    {
-        $allowedStatuses = ['en_cours', 'traitee', 'refusee'];
-
-        if (!in_array($status, $allowedStatuses, true)) {
-            return [];
-        }
-
-        $sql = "
-            SELECT
-                t.id,
-                t.user_id,
-                t.title,
-                t.description,
-                t.priority,
-                t.status,
-                t.created_at,
-                t.updated_at,
-                u.full_name,
-                u.email
-            FROM tickets t
-            INNER JOIN users u ON t.user_id = u.id
-            WHERE t.status = :status
-            ORDER BY t.created_at DESC
-        ";
-
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
-            'status' => $status
-        ]);
-
-        return $stmt->fetchAll();
-    }
-
-    public function getById(int $id): array|false
-    {
-        $sql = "
-            SELECT
-                t.id,
-                t.user_id,
-                t.title,
-                t.description,
-                t.priority,
-                t.status,
-                t.created_at,
-                t.updated_at,
-                u.full_name,
-                u.email
-            FROM tickets t
-            INNER JOIN users u ON t.user_id = u.id
-            WHERE t.id = :id
-            LIMIT 1
-        ";
-
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
-            'id' => $id
-        ]);
-
-        return $stmt->fetch();
-    }
-
-    public function getByUserId(int $userId): array
-    {
-        $sql = "
-            SELECT
-                id,
+        $stmt = $this->db->prepare("
+            INSERT INTO tickets
+            (
                 user_id,
                 title,
                 description,
                 priority,
                 status,
-                created_at,
-                updated_at
+                created_at
+            )
+            VALUES (?, ?, ?, ?, 'en_cours', NOW())
+        ");
+
+        return $stmt->execute([
+            $userId,
+            $title,
+            $description,
+            $priority
+        ]);
+    }
+
+    // =========================
+    // GET ALL TICKETS
+    // =========================
+
+    public function getAll(): array
+    {
+        $stmt = $this->db->query("
+            SELECT
+                tickets.*,
+                users.full_name,
+                users.email
             FROM tickets
-            WHERE user_id = :user_id
-            ORDER BY created_at DESC
-        ";
+            JOIN users
+            ON tickets.user_id = users.id
+            ORDER BY tickets.id DESC
+        ");
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
-            'user_id' => $userId
-        ]);
-
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function create(int $userId, string $title, string $description, string $priority): int|false
+    // =========================
+    // GET USER TICKETS
+    // =========================
+
+    public function getByUser($userId): array
     {
-        $allowedPriorities = ['low', 'medium', 'high'];
+        $stmt = $this->db->prepare("
+            SELECT *
+            FROM tickets
+            WHERE user_id = ?
+            ORDER BY id DESC
+        ");
 
-        if (!in_array($priority, $allowedPriorities, true)) {
-            return false;
-        }
+        $stmt->execute([$userId]);
 
-        $sql = "
-            INSERT INTO tickets (user_id, title, description, priority, status, created_at)
-            VALUES (:user_id, :title, :description, :priority, 'en_cours', NOW())
-        ";
-
-        $stmt = $this->pdo->prepare($sql);
-        $success = $stmt->execute([
-            'user_id' => $userId,
-            'title' => $title,
-            'description' => $description,
-            'priority' => $priority
-        ]);
-
-        if (!$success) {
-            return false;
-        }
-
-        return (int) $this->pdo->lastInsertId();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function update(int $id, string $title, string $description, string $priority, string $status): bool
+    // =========================
+    // GET ONE TICKET
+    // =========================
+
+    public function getById(int $id): ?array
     {
-        $allowedPriorities = ['low', 'medium', 'high'];
-        $allowedStatuses = ['en_cours', 'traitee', 'refusee'];
+        $stmt = $this->db->prepare("
+            SELECT *
+            FROM tickets
+            WHERE id = ?
+        ");
 
-        if (!in_array($priority, $allowedPriorities, true)) {
-            return false;
-        }
+        $stmt->execute([$id]);
 
-        if (!in_array($status, $allowedStatuses, true)) {
-            return false;
-        }
+        $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = "
+        return $ticket ?: null;
+    }
+
+    // =========================
+    // UPDATE TICKET
+    // =========================
+
+    public function update(
+        int $id,
+        string $title,
+        string $description,
+        string $priority,
+        string $status
+    ): bool {
+
+        $stmt = $this->db->prepare("
             UPDATE tickets
             SET
-                title = :title,
-                description = :description,
-                priority = :priority,
-                status = :status,
-                updated_at = NOW()
-            WHERE id = :id
-        ";
-
-        $stmt = $this->pdo->prepare($sql);
+                title = ?,
+                description = ?,
+                priority = ?,
+                status = ?
+            WHERE id = ?
+        ");
 
         return $stmt->execute([
-            'id' => $id,
-            'title' => $title,
-            'description' => $description,
-            'priority' => $priority,
-            'status' => $status
+            $title,
+            $description,
+            $priority,
+            $status,
+            $id
         ]);
     }
 
-    public function updateStatus(int $id, string $status): bool
-    {
-        $allowedStatuses = ['en_cours', 'traitee', 'refusee'];
+    // =========================
+    // UPDATE STATUS
+    // =========================
 
-        if (!in_array($status, $allowedStatuses, true)) {
-            return false;
-        }
+    public function updateStatus(
+        int $id,
+        string $status
+    ): bool {
 
-        $sql = "
+        $stmt = $this->db->prepare("
             UPDATE tickets
-            SET
-                status = :status,
-                updated_at = NOW()
-            WHERE id = :id
-        ";
-
-        $stmt = $this->pdo->prepare($sql);
+            SET status = ?
+            WHERE id = ?
+        ");
 
         return $stmt->execute([
-            'id' => $id,
-            'status' => $status
+            $status,
+            $id
         ]);
     }
+
+    // =========================
+    // DELETE TICKET
+    // =========================
 
     public function delete(int $id): bool
     {
-        $sql = "DELETE FROM tickets WHERE id = :id";
-        $stmt = $this->pdo->prepare($sql);
+        $stmt = $this->db->prepare("
+            DELETE FROM tickets
+            WHERE id = ?
+        ");
 
-        return $stmt->execute([
-            'id' => $id
-        ]);
+        return $stmt->execute([$id]);
     }
 }
