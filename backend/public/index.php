@@ -9,6 +9,9 @@ require_once __DIR__ . '/../controllers/TicketController.php';
 require_once __DIR__ . '/../controllers/TechnicienController.php';
 require_once __DIR__ . '/../controllers/AssetController.php';
 
+require_once __DIR__ . '/../services/TicketService.php';
+require_once __DIR__ . '/../services/UserService.php';
+
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
 
@@ -268,6 +271,56 @@ elseif (
     $messageController->create(
         (int)$matches[1]
     );
+
+    exit;
+}
+
+/* stats admin */
+
+elseif (
+    $uri === '/api/admin/stats'
+    && $method === 'GET'
+) {
+
+    $ticketService =
+        new TicketService();
+
+    $userService =
+        new UserService();
+
+    echo json_encode([
+
+        "success" => true,
+
+        "stats" => [
+
+            "en_cours" =>
+                $ticketService
+                    ->countByStatus(
+                        "en_cours"
+                    ),
+
+            "traitee" =>
+                $ticketService
+                    ->countByStatus(
+                        "traitee"
+                    ),
+
+            "refusee" =>
+                $ticketService
+                    ->countByStatus(
+                        "refusee"
+                    ),
+
+            "total_tickets" =>
+                $ticketService
+                    ->countAll(),
+
+            "users" =>
+                $userService
+                    ->countAll()
+        ]
+    ]);
 
     exit;
 }

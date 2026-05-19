@@ -2,10 +2,13 @@
 <html lang="fr">
 
 <head>
+
     <meta charset="UTF-8">
+
     <title>Dashboard Technicien</title>
 
     <link rel="stylesheet" href="css/style.css">
+
 </head>
 
 <script src="js/api.js"></script>
@@ -19,21 +22,21 @@ requireAuth("technicien");
 
     <h1>Dashboard Technicien</h1>
 
+    <!-- stats -->
+
+    <div
+        id="statsCards"
+        class="stats-grid"
+    ></div>
+
+    <!-- actions -->
+
     <div class="dashboard-grid">
 
-        <a class="dash-card" href="tickets-technicien.html?status=en_cours">
-            Requêtes en cours
-        </a>
-
-        <a class="dash-card" href="tickets-technicien.html?status=traitee">
-            Requêtes traitées
-        </a>
-
-        <a class="dash-card" href="tickets-technicien.html?status=refusee">
-            Requêtes refusées
-        </a>
-
-        <button class="dash-card logout-btn" onclick="logout()">
+        <button
+            class="back-btn"
+            onclick="logout()"
+        >
             Logout
         </button>
 
@@ -41,18 +44,84 @@ requireAuth("technicien");
 
     <script>
 
+        async function loadStats() {
+
+            try {
+
+                const result =
+                    await apiFetch(
+                        "/api/admin/stats"
+                    );
+
+                if (!result.success) {
+
+                    return;
+                }
+
+                const s =
+                    result.stats;
+
+                document.getElementById(
+                    "statsCards"
+                ).innerHTML = `
+
+                    <a
+                        href="tickets-technicien.html?status=en_cours"
+                        class="stat-card yellow"
+                    >
+                        <h3>En cours</h3>
+
+                        <span>
+                            ${s.en_cours}
+                        </span>
+                    </a>
+
+                    <a
+                        href="tickets-technicien.html?status=traitee"
+                        class="stat-card green"
+                    >
+                        <h3>Traités</h3>
+
+                        <span>
+                            ${s.traitee}
+                        </span>
+                    </a>
+
+                    <a
+                        href="tickets-technicien.html?status=refusee"
+                        class="stat-card red"
+                    >
+                        <h3>Refusés</h3>
+
+                        <span>
+                            ${s.refusee}
+                        </span>
+                    </a>
+
+                `;
+
+            } catch (error) {
+
+                console.error(error);
+            }
+        }
+
         async function logout() {
 
             await fetch(
                 "http://localhost/fil-rouge-infra-si/backend/public/index.php/api/logout",
                 {
                     method: "POST",
+
                     credentials: "include"
                 }
             );
 
-            window.location.href = "login.html";
+            window.location.href =
+                "login.html";
         }
+
+        loadStats();
 
     </script>
 

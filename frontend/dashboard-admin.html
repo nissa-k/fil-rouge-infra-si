@@ -1,9 +1,14 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
+
     <meta charset="UTF-8">
+
     <title>Dashboard Admin</title>
+
     <link rel="stylesheet" href="css/style.css">
+
 </head>
 
 <script src="js/api.js"></script>
@@ -17,41 +22,159 @@ requireAuth("admin");
 
     <h1>Dashboard Admin</h1>
 
+    <!-- stats -->
+
+    <div
+        id="statsCards"
+        class="stats-grid"
+    ></div>
+
+    <!-- actions -->
+
     <div class="dashboard-grid">
 
-        <a class="dash-card" href="tickets-admin.html">
+        <a
+            class="dash-card"
+            href="tickets-admin.html"
+        >
             Gérer les tickets
         </a>
 
-        <a class="dash-card" href="users.html">
+        <a
+            class="dash-card"
+            href="users.html"
+        >
             Gérer utilisateurs
         </a>
 
-        
-        <a class="dash-card" href="create-user.html">
+        <a
+            class="dash-card"
+            href="create-user.html"
+        >
             Créer utilisateur
         </a>
 
-        <a class="dash-card" href="assets.html">
+        <a
+            class="dash-card"
+            href="assets.html"
+        >
             Parc informatique
         </a>
 
-        <button class="dash-card logout-btn" onclick="logout()">
+        <button
+            class="back-btn"
+            onclick="logout()"
+        >
             Logout
         </button>
 
     </div>
 
     <script>
-        async function logout() {
-            await fetch("http://localhost/fil-rouge-infra-si/backend/public/index.php/api/logout", {
-                method: "POST",
-                credentials: "include"
-            });
 
-            window.location.href = "login.html";
+        async function loadStats() {
+
+            try {
+
+                const result =
+                    await apiFetch(
+                        "/api/admin/stats"
+                    );
+
+                if (!result.success) {
+
+                    return;
+                }
+
+                const s =
+                    result.stats;
+
+                document.getElementById(
+                    "statsCards"
+                ).innerHTML = `
+
+                    <a
+                        href="tickets-admin.html"
+                        class="stat-card blue"
+                    >
+                        <h3>Total tickets</h3>
+
+                        <span>
+                            ${s.total_tickets}
+                        </span>
+                    </a>
+
+                    <a
+                        href="tickets-admin.html?status=en_cours"
+                        class="stat-card yellow"
+                    >
+                        <h3>En cours</h3>
+
+                        <span>
+                            ${s.en_cours}
+                        </span>
+                    </a>
+
+                    <a
+                        href="tickets-admin.html?status=traitee"
+                        class="stat-card green"
+                    >
+                        <h3>Traités</h3>
+
+                        <span>
+                            ${s.traitee}
+                        </span>
+                    </a>
+
+                    <a
+                        href="tickets-admin.html?status=refusee"
+                        class="stat-card red"
+                    >
+                        <h3>Refusés</h3>
+
+                        <span>
+                            ${s.refusee}
+                        </span>
+                    </a>
+
+                    <a
+                        href="users.html"
+                        class="stat-card purple"
+                    >
+                        <h3>Utilisateurs</h3>
+
+                        <span>
+                            ${s.users}
+                        </span>
+                    </a>
+
+                `;
+
+            } catch (error) {
+
+                console.error(error);
+            }
         }
+
+        async function logout() {
+
+            await fetch(
+                "http://localhost/fil-rouge-infra-si/backend/public/index.php/api/logout",
+                {
+                    method: "POST",
+
+                    credentials: "include"
+                }
+            );
+
+            window.location.href =
+                "login.html";
+        }
+
+        loadStats();
+
     </script>
 
 </body>
+
 </html>

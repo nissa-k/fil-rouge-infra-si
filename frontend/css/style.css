@@ -115,10 +115,6 @@ button:hover {
     text-decoration: none;
 }
 
-.logout-btn {
-    background: #666;
-}
-
 .ticket-card,
 .user-card,
 .card {
@@ -314,4 +310,90 @@ form button{
     border-radius: 8px;
 
     padding: 10px;
+}
+.stats-grid {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    width: fit-content;
+    margin: 55px auto 30px auto;
+}
+
+.stat-card {
+
+    width: 200px;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 2px;
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    transition: 0.2s;
+    margin: auto;
+}
+
+.stat-card:hover {
+
+    transform: scale(1.03);
+}
+
+.stat-card span {
+
+    display: block;
+
+    margin-top: 15px;
+
+    font-size: 42px;
+}
+
+.blue {
+    background: #2563eb;
+}
+
+.green {
+    background: #16a34a;
+}
+
+.red {
+    background: #ff0000;
+}
+
+.yellow {
+    background: #e4c309;
+}
+
+.purple {
+    background: #7c3aed;
+}
+.back-btn {
+
+    display: inline-block;
+
+    margin-top: 20px;
+
+    padding: 12px 24px;
+
+    background: #1f1f1f;
+
+    color: white;
+
+    text-decoration: none;
+
+    border-radius: 10px;
+
+    transition: 0.2s;
+
+    border: 1px solid #333;
+}
+
+.back-btn:hover {
+
+    background: #2b2b2b;
+
+    transform: scale(1.03);
 }

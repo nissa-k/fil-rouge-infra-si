@@ -61,8 +61,10 @@ class TicketService
 
     // tickets d'un utilisateur
 
-    public function getByUser($userId): array
-    {
+    public function getByUser(
+        int $userId
+    ): array {
+
         $stmt = $this->db->prepare("
             SELECT *
             FROM tickets
@@ -77,8 +79,10 @@ class TicketService
 
     // ticket par id
 
-    public function getById(int $id): ?array
-    {
+    public function getById(
+        int $id
+    ): ?array {
+
         $stmt = $this->db->prepare("
             SELECT *
             FROM tickets
@@ -87,7 +91,8 @@ class TicketService
 
         $stmt->execute([$id]);
 
-        $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
+        $ticket =
+            $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $ticket ?: null;
     }
@@ -108,7 +113,8 @@ class TicketService
                 title = ?,
                 description = ?,
                 priority = ?,
-                status = ?
+                status = ?,
+                updated_at = NOW()
             WHERE id = ?
         ");
 
@@ -121,7 +127,7 @@ class TicketService
         ]);
     }
 
-    // mettre à jour le statut d'un ticket (admin)
+    // mettre à jour le statut d'un ticket
 
     public function updateStatus(
         int $id,
@@ -130,7 +136,9 @@ class TicketService
 
         $stmt = $this->db->prepare("
             UPDATE tickets
-            SET status = ?
+            SET
+                status = ?,
+                updated_at = NOW()
             WHERE id = ?
         ");
 
@@ -140,10 +148,12 @@ class TicketService
         ]);
     }
 
-    // supprimer un ticket (admin)
+    // supprimer un ticket
 
-    public function delete(int $id): bool
-    {
+    public function delete(
+        int $id
+    ): bool {
+
         $stmt = $this->db->prepare("
             DELETE FROM tickets
             WHERE id = ?
@@ -152,36 +162,47 @@ class TicketService
         return $stmt->execute([$id]);
     }
 
-    // récupérer les tickets d'un technicien par statut
+    // récupérer tickets technicien par statut
 
-    public function getByTechAndStatus(int $technicienId, string $status): array
-    {
+    public function getByTechAndStatus(
+        int $technicienId,
+        string $status
+    ): array {
+
         $stmt = $this->db->prepare("
             SELECT
                 tickets.*,
                 users.full_name AS client
             FROM tickets
-            JOIN users ON users.id = tickets.user_id
+            JOIN users
+            ON users.id = tickets.user_id
             WHERE tickets.technicien_id = ?
-              AND tickets.status = ?
+            AND tickets.status = ?
             ORDER BY tickets.created_at DESC
         ");
 
-        $stmt->execute([$technicienId, $status]);
+        $stmt->execute([
+            $technicienId,
+            $status
+        ]);
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // traiter ou refuser un ticket (technicien)
+    // traiter / refuser ticket
 
-    public function changerStatut(int $id, string $status, string $commentaire): bool
-    {
+    public function changerStatut(
+        int $id,
+        string $status,
+        string $commentaire
+    ): bool {
+
         $stmt = $this->db->prepare("
             UPDATE tickets
             SET
-                status      = ?,
+                status = ?,
                 commentaire = ?,
-                updated_at  = NOW()
+                updated_at = NOW()
             WHERE id = ?
         ");
 
@@ -190,5 +211,40 @@ class TicketService
             $commentaire,
             $id
         ]);
+    }
+
+    // statistiques par statut
+
+    public function countByStatus(
+        string $status
+    ): int {
+
+        $stmt = $this->db->prepare("
+            SELECT COUNT(*) AS total
+            FROM tickets
+            WHERE status = ?
+        ");
+
+        $stmt->execute([$status]);
+
+        $result =
+            $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return (int)$result['total'];
+    }
+
+    // total tickets
+
+    public function countAll(): int
+    {
+        $stmt = $this->db->query("
+            SELECT COUNT(*) AS total
+            FROM tickets
+        ");
+
+        $result =
+            $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return (int)$result['total'];
     }
 }
