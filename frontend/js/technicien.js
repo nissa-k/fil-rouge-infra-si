@@ -129,6 +129,124 @@ async function updateTicketStatus(id, status) {
     }
 }
 
+async function loadMessages(ticketId) {
+
+    const messagesDiv =
+        document.getElementById(
+            `messages-${ticketId}`
+        );
+
+    if (!messagesDiv) return;
+
+    try {
+
+        const result = await apiFetch(
+            `/api/tickets/${ticketId}/messages`,
+            {
+                method: "GET"
+            }
+        );
+
+        if (!result.success) {
+
+            messagesDiv.innerHTML =
+                "Erreur chargement messages";
+
+            return;
+        }
+
+        const messages =
+            result.messages || [];
+
+        if (messages.length === 0) {
+
+            messagesDiv.innerHTML =
+                "<p>Aucun message</p>";
+
+            return;
+        }
+
+        messagesDiv.innerHTML =
+            messages.map(message => `
+
+                <div class="message-item">
+
+                    <b>
+                        ${message.full_name}
+                    </b>
+
+                    <p>
+                        ${message.message}
+                    </p>
+
+                    <small>
+                        ${message.created_at}
+                    </small>
+
+                </div>
+
+            `).join("");
+
+    } catch (error) {
+
+        console.error(error);
+
+        messagesDiv.innerHTML =
+            "Erreur chargement messages";
+    }
+}
+
+async function sendMessage(ticketId) {
+
+    const textarea =
+        document.getElementById(
+            `message-input-${ticketId}`
+        );
+
+    if (!textarea) return;
+
+    const message =
+        textarea.value.trim();
+
+    if (message === "") {
+
+        alert("Message vide");
+
+        return;
+    }
+
+    try {
+
+        const result = await apiFetch(
+            `/api/tickets/${ticketId}/messages`,
+            {
+                method: "POST",
+
+                body: JSON.stringify({
+                    message
+                })
+            }
+        );
+
+        if (result.success) {
+
+            textarea.value = "";
+
+            loadMessages(ticketId);
+
+        } else {
+
+            alert("Erreur envoi");
+        }
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Erreur envoi");
+    }
+}
+
 async function loadTickets() {
 
     const container =
@@ -202,16 +320,40 @@ async function loadTickets() {
                     ${ticket.priority}
                 </p>
 
-                <p>
-                    <b>Commentaire :</b>
-                    ${ticket.commentaire || "Aucun"}
-                </p>
+                <div class="ticket-messages">
+
+                    <h4>Conversation</h4>
+
+                    <div
+                        class="messages-list"
+                        id="messages-${ticket.id}"
+                    >
+                        Chargement...
+                    </div>
+
+                    <textarea
+                        id="message-input-${ticket.id}"
+                        placeholder="Écrire un message..."
+                    ></textarea>
+
+                    <button
+                        onclick="sendMessage(${ticket.id})"
+                    >
+                        Envoyer
+                    </button>
+
+                </div>
 
                 ${renderButtons(ticket)}
 
             </div>
 
         `).join("");
+
+        tickets.forEach(ticket => {
+
+            loadMessages(ticket.id);
+        });
 
     } catch (error) {
 

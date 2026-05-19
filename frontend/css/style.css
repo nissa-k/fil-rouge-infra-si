@@ -269,3 +269,49 @@ form button{
 
     background: #d64545;
 }
+.ticket-messages {
+
+    margin-top: 20px;
+
+    padding-top: 15px;
+
+    border-top: 1px solid #333;
+}
+
+.messages-list {
+
+    max-height: 250px;
+
+    overflow-y: auto;
+
+    margin-bottom: 10px;
+}
+
+.message-item {
+
+    background: #1f1f1f;
+
+    padding: 10px;
+
+    border-radius: 8px;
+
+    margin-bottom: 10px;
+}
+
+.message-item small {
+
+    opacity: 0.7;
+}
+
+.ticket-messages textarea {
+
+    width: 100%;
+
+    min-height: 80px;
+
+    margin-bottom: 10px;
+
+    border-radius: 8px;
+
+    padding: 10px;
+}

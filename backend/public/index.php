@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+require_once __DIR__ . '/../controllers/MessageController.php';
 require_once __DIR__ . '/../controllers/AuthController.php';
 require_once __DIR__ . '/../controllers/UserController.php';
 require_once __DIR__ . '/../controllers/TicketController.php';
@@ -18,26 +19,55 @@ session_start();
 
 header("Content-Type: application/json; charset=UTF-8");
 
-/*controllers*/
+/* controllers */
 
-$authController = new AuthController();
-$userController = new UserController();
-$ticketController = new TicketController();
-$technicienController = new TechnicienController();
-$assetController = new AssetController();
+$authController =
+    new AuthController();
 
+$userController =
+    new UserController();
 
-$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$ticketController =
+    new TicketController();
 
-$method = $_SERVER['REQUEST_METHOD'];
+$technicienController =
+    new TechnicienController();
+
+$assetController =
+    new AssetController();
+
+$messageController =
+    new MessageController();
+
+/* uri */
+
+$uri =
+    parse_url(
+        $_SERVER['REQUEST_URI'],
+        PHP_URL_PATH
+    );
+
+$method =
+    $_SERVER['REQUEST_METHOD'];
 
 $uri = str_replace(
-    '/fil-rouge-infra-si/backend/public/index.php',
+    '/fil-rouge-infra-si/backend/public',
     '',
     $uri
 );
 
-/*auth*/
+$uri = str_replace(
+    '/index.php',
+    '',
+    $uri
+);
+
+if ($uri === '') {
+
+    $uri = '/';
+}
+
+/* auth */
 
 if ($uri === '/api/login' && $method === 'POST') {
 
@@ -88,16 +118,22 @@ elseif ($uri === '/api/reset-password' && $method === 'POST') {
     exit;
 }
 
-/*client*/
+/* client */
 
-elseif ($uri === '/api/client/tickets' && $method === 'POST') {
+elseif (
+    $uri === '/api/client/tickets'
+    && $method === 'POST'
+) {
 
     $ticketController->create();
 
     exit;
 }
 
-elseif ($uri === '/api/client/tickets' && $method === 'GET') {
+elseif (
+    $uri === '/api/client/tickets'
+    && $method === 'GET'
+) {
 
     $ticketController->myTickets();
 
@@ -106,14 +142,20 @@ elseif ($uri === '/api/client/tickets' && $method === 'GET') {
 
 /* admin users */
 
-elseif ($uri === '/api/admin/users' && $method === 'GET') {
+elseif (
+    $uri === '/api/admin/users'
+    && $method === 'GET'
+) {
 
     $userController->index();
 
     exit;
 }
 
-elseif ($uri === '/api/admin/users/create' && $method === 'POST') {
+elseif (
+    $uri === '/api/admin/users/create'
+    && $method === 'POST'
+) {
 
     $userController->create();
 
@@ -121,18 +163,27 @@ elseif ($uri === '/api/admin/users/create' && $method === 'POST') {
 }
 
 elseif (
-    preg_match('#^/api/admin/users/(\\d+)$#', $uri, $matches)
+    preg_match(
+        '#^/api/admin/users/(\\d+)$#',
+        $uri,
+        $matches
+    )
     && $method === 'DELETE'
 ) {
 
-    $userController->delete((int)$matches[1]);
+    $userController->delete(
+        (int)$matches[1]
+    );
 
     exit;
 }
 
 /* tickets admin */
 
-elseif ($uri === '/api/admin/tickets' && $method === 'GET') {
+elseif (
+    $uri === '/api/admin/tickets'
+    && $method === 'GET'
+) {
 
     $ticketController->index();
 
@@ -140,52 +191,113 @@ elseif ($uri === '/api/admin/tickets' && $method === 'GET') {
 }
 
 elseif (
-    preg_match('#^/api/admin/tickets/(\\d+)/status$#', $uri, $matches)
+    preg_match(
+        '#^/api/admin/tickets/(\\d+)/status$#',
+        $uri,
+        $matches
+    )
     && $method === 'PUT'
 ) {
 
-    $ticketController->updateStatus((int)$matches[1]);
+    $ticketController->updateStatus(
+        (int)$matches[1]
+    );
 
     exit;
 }
 
 elseif (
-    preg_match('#^/api/admin/tickets/(\\d+)$#', $uri, $matches)
+    preg_match(
+        '#^/api/admin/tickets/(\\d+)$#',
+        $uri,
+        $matches
+    )
     && $method === 'PUT'
 ) {
 
-    $ticketController->update((int)$matches[1]);
+    $ticketController->update(
+        (int)$matches[1]
+    );
 
     exit;
 }
 
 elseif (
-    preg_match('#^/api/admin/tickets/(\\d+)$#', $uri, $matches)
+    preg_match(
+        '#^/api/admin/tickets/(\\d+)$#',
+        $uri,
+        $matches
+    )
     && $method === 'DELETE'
 ) {
 
-    $ticketController->delete((int)$matches[1]);
+    $ticketController->delete(
+        (int)$matches[1]
+    );
 
     exit;
 }
 
-/*technicien*/
+/* messages */
 
-elseif ($uri === '/api/technicien/tickets/en-cours' && $method === 'GET') {
+elseif (
+    preg_match(
+        '#^/api/tickets/(\\d+)/messages$#',
+        $uri,
+        $matches
+    )
+    && $method === 'GET'
+) {
+
+    $messageController->index(
+        (int)$matches[1]
+    );
+
+    exit;
+}
+
+elseif (
+    preg_match(
+        '#^/api/tickets/(\\d+)/messages$#',
+        $uri,
+        $matches
+    )
+    && $method === 'POST'
+) {
+
+    $messageController->create(
+        (int)$matches[1]
+    );
+
+    exit;
+}
+
+/* technicien */
+
+elseif (
+    $uri === '/api/technicien/tickets/en-cours'
+    && $method === 'GET'
+) {
 
     $technicienController->getEnCours();
 
     exit;
 }
 
-elseif ($uri === '/api/technicien/tickets/traitees' && $method === 'GET') {
+elseif (
+    $uri === '/api/technicien/tickets/traitees'
+    && $method === 'GET'
+) {
 
     $technicienController->getTraitees();
 
     exit;
 }
 
-elseif ($uri === '/api/technicien/tickets/refusees' && $method === 'GET') {
+elseif (
+    $uri === '/api/technicien/tickets/refusees'
+    && $method === 'GET'
+) {
 
     $technicienController->getRefusees();
 
@@ -193,35 +305,53 @@ elseif ($uri === '/api/technicien/tickets/refusees' && $method === 'GET') {
 }
 
 elseif (
-    preg_match('#^/api/technicien/tickets/(\\d+)/traiter$#', $uri, $matches)
+    preg_match(
+        '#^/api/technicien/tickets/(\\d+)/traiter$#',
+        $uri,
+        $matches
+    )
     && $method === 'PUT'
 ) {
 
-    $technicienController->traiter((int)$matches[1]);
+    $technicienController->traiter(
+        (int)$matches[1]
+    );
 
     exit;
 }
 
 elseif (
-    preg_match('#^/api/technicien/tickets/(\\d+)/refuser$#', $uri, $matches)
+    preg_match(
+        '#^/api/technicien/tickets/(\\d+)/refuser$#',
+        $uri,
+        $matches
+    )
     && $method === 'PUT'
 ) {
 
-    $technicienController->refuser((int)$matches[1]);
+    $technicienController->refuser(
+        (int)$matches[1]
+    );
 
     exit;
 }
 
-/*parc informatique*/
+/* assets */
 
-elseif ($uri === '/api/assets' && $method === 'GET') {
+elseif (
+    $uri === '/api/assets'
+    && $method === 'GET'
+) {
 
     $assetController->index();
 
     exit;
 }
 
-elseif ($uri === '/api/assets' && $method === 'POST') {
+elseif (
+    $uri === '/api/assets'
+    && $method === 'POST'
+) {
 
     $assetController->store();
 
@@ -229,36 +359,54 @@ elseif ($uri === '/api/assets' && $method === 'POST') {
 }
 
 elseif (
-    preg_match('#^/api/assets/(\\d+)$#', $uri, $matches)
+    preg_match(
+        '#^/api/assets/(\\d+)$#',
+        $uri,
+        $matches
+    )
     && $method === 'GET'
 ) {
 
-    $assetController->show((int)$matches[1]);
+    $assetController->show(
+        (int)$matches[1]
+    );
 
     exit;
 }
 
 elseif (
-    preg_match('#^/api/assets/(\\d+)$#', $uri, $matches)
+    preg_match(
+        '#^/api/assets/(\\d+)$#',
+        $uri,
+        $matches
+    )
     && $method === 'PUT'
 ) {
 
-    $assetController->update((int)$matches[1]);
+    $assetController->update(
+        (int)$matches[1]
+    );
 
     exit;
 }
 
 elseif (
-    preg_match('#^/api/assets/(\\d+)$#', $uri, $matches)
+    preg_match(
+        '#^/api/assets/(\\d+)$#',
+        $uri,
+        $matches
+    )
     && $method === 'DELETE'
 ) {
 
-    $assetController->delete((int)$matches[1]);
+    $assetController->delete(
+        (int)$matches[1]
+    );
 
     exit;
 }
 
-/*404*/
+/* 404 */
 
 http_response_code(404);
 

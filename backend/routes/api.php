@@ -5,7 +5,7 @@ require_once __DIR__ . '/../controllers/TicketController.php';
 require_once __DIR__ . '/../controllers/UserController.php';
 require_once __DIR__ . '/../controllers/ClientTicketController.php';
 require_once __DIR__ . '/../controllers/AssetController.php';
-
+require_once __DIR__ . '/../controllers/MessageController.php';
 require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
 require_once __DIR__ . '/../middlewares/RoleMiddleware.php';
 
@@ -29,10 +29,21 @@ if ($uri === '') {
 /* controllers */
 
 $authController = new AuthController();
-$ticketController = new TicketController();
-$userController = new UserController();
-$clientTicketController = new ClientTicketController();
-$assetController = new AssetController();
+
+$ticketController =
+    new TicketController();
+
+$userController =
+    new UserController();
+
+$clientTicketController =
+    new ClientTicketController();
+
+$assetController =
+    new AssetController();
+
+$messageController =
+    new MessageController();
 
 /* auth */
 
@@ -53,6 +64,7 @@ if ($uri === '/api/verify-2fa' && $method === 'POST') {
 if ($uri === '/api/logout' && $method === 'POST') {
 
     AuthMiddleware::handle();
+
     $authController->logout();
 
     exit;
@@ -61,6 +73,7 @@ if ($uri === '/api/logout' && $method === 'POST') {
 if ($uri === '/api/me' && $method === 'GET') {
 
     AuthMiddleware::handle();
+
     $authController->me();
 
     exit;
@@ -69,6 +82,7 @@ if ($uri === '/api/me' && $method === 'GET') {
 if ($uri === '/api/change-password' && $method === 'POST') {
 
     AuthMiddleware::handle();
+
     $authController->changePassword();
 
     exit;
@@ -93,7 +107,9 @@ if ($uri === '/api/reset-password' && $method === 'POST') {
 if ($uri === '/api/client/tickets' && $method === 'GET') {
 
     AuthMiddleware::handle();
+
     RoleMiddleware::handle('client');
+
     $clientTicketController->myTickets();
 
     exit;
@@ -102,7 +118,9 @@ if ($uri === '/api/client/tickets' && $method === 'GET') {
 if ($uri === '/api/client/tickets' && $method === 'POST') {
 
     AuthMiddleware::handle();
+
     RoleMiddleware::handle('client');
+
     $clientTicketController->create();
 
     exit;
@@ -113,7 +131,9 @@ if ($uri === '/api/client/tickets' && $method === 'POST') {
 if ($uri === '/api/admin/tickets' && $method === 'GET') {
 
     AuthMiddleware::handle();
+
     RoleMiddleware::handle('admin');
+
     $ticketController->index();
 
     exit;
@@ -122,14 +142,19 @@ if ($uri === '/api/admin/tickets' && $method === 'GET') {
 /* modifier statut ticket */
 
 if (
-    preg_match('#^/api/admin/tickets/(\d+)/status$#', $uri, $m)
+    preg_match(
+        '#^/api/admin/tickets/(\d+)/status$#',
+        $uri,
+        $m
+    )
     && $method === 'PUT'
 ) {
 
     AuthMiddleware::handle();
-    RoleMiddleware::handle('admin');
 
-    $ticketController->updateStatus((int)$m[1]);
+    $ticketController->updateStatus(
+        (int)$m[1]
+    );
 
     exit;
 }
@@ -137,14 +162,21 @@ if (
 /* modifier ticket */
 
 if (
-    preg_match('#^/api/admin/tickets/(\d+)$#', $uri, $m)
+    preg_match(
+        '#^/api/admin/tickets/(\d+)$#',
+        $uri,
+        $m
+    )
     && $method === 'PUT'
 ) {
 
     AuthMiddleware::handle();
+
     RoleMiddleware::handle('admin');
 
-    $ticketController->update((int)$m[1]);
+    $ticketController->update(
+        (int)$m[1]
+    );
 
     exit;
 }
@@ -152,14 +184,59 @@ if (
 /* supprimer ticket */
 
 if (
-    preg_match('#^/api/admin/tickets/(\d+)$#', $uri, $m)
+    preg_match(
+        '#^/api/admin/tickets/(\d+)$#',
+        $uri,
+        $m
+    )
     && $method === 'DELETE'
 ) {
 
     AuthMiddleware::handle();
+
     RoleMiddleware::handle('admin');
 
-    $ticketController->delete((int)$m[1]);
+    $ticketController->delete(
+        (int)$m[1]
+    );
+
+    exit;
+}
+
+/* messages tickets */
+
+if (
+    preg_match(
+        '#^/api/tickets/(\d+)/messages$#',
+        $uri,
+        $m
+    )
+    && $method === 'GET'
+) {
+
+    AuthMiddleware::handle();
+
+    $messageController->index(
+        (int)$m[1]
+    );
+
+    exit;
+}
+
+if (
+    preg_match(
+        '#^/api/tickets/(\d+)/messages$#',
+        $uri,
+        $m
+    )
+    && $method === 'POST'
+) {
+
+    AuthMiddleware::handle();
+
+    $messageController->create(
+        (int)$m[1]
+    );
 
     exit;
 }
@@ -169,6 +246,7 @@ if (
 if ($uri === '/api/admin/users' && $method === 'GET') {
 
     AuthMiddleware::handle();
+
     RoleMiddleware::handle('admin');
 
     $userController->index();
@@ -179,6 +257,7 @@ if ($uri === '/api/admin/users' && $method === 'GET') {
 if ($uri === '/api/admin/users' && $method === 'POST') {
 
     AuthMiddleware::handle();
+
     RoleMiddleware::handle('admin');
 
     $authController->createUser();
@@ -187,23 +266,31 @@ if ($uri === '/api/admin/users' && $method === 'POST') {
 }
 
 if (
-    preg_match('#^/api/admin/users/(\d+)$#', $uri, $m)
+    preg_match(
+        '#^/api/admin/users/(\d+)$#',
+        $uri,
+        $m
+    )
     && $method === 'DELETE'
 ) {
 
     AuthMiddleware::handle();
+
     RoleMiddleware::handle('admin');
 
-    $userController->delete((int)$m[1]);
+    $userController->delete(
+        (int)$m[1]
+    );
 
     exit;
 }
 
-/* assets parc informatique */
+/* assets */
 
 if ($uri === '/api/assets' && $method === 'GET') {
 
     AuthMiddleware::handle();
+
     RoleMiddleware::handle('admin');
 
     $assetController->index();
@@ -214,6 +301,7 @@ if ($uri === '/api/assets' && $method === 'GET') {
 if ($uri === '/api/assets' && $method === 'POST') {
 
     AuthMiddleware::handle();
+
     RoleMiddleware::handle('admin');
 
     $assetController->store();
@@ -222,40 +310,61 @@ if ($uri === '/api/assets' && $method === 'POST') {
 }
 
 if (
-    preg_match('#^/api/assets/(\d+)$#', $uri, $m)
+    preg_match(
+        '#^/api/assets/(\d+)$#',
+        $uri,
+        $m
+    )
     && $method === 'GET'
 ) {
 
     AuthMiddleware::handle();
+
     RoleMiddleware::handle('admin');
 
-    $assetController->show((int)$m[1]);
+    $assetController->show(
+        (int)$m[1]
+    );
 
     exit;
 }
 
 if (
-    preg_match('#^/api/assets/(\d+)$#', $uri, $m)
+    preg_match(
+        '#^/api/assets/(\d+)$#',
+        $uri,
+        $m
+    )
     && $method === 'PUT'
 ) {
 
     AuthMiddleware::handle();
+
     RoleMiddleware::handle('admin');
 
-    $assetController->update((int)$m[1]);
+    $assetController->update(
+        (int)$m[1]
+    );
 
     exit;
 }
 
 if (
-    preg_match('#^/api/assets/(\d+)$#', $uri, $m)
+    preg_match(
+        '#^/api/assets/(\d+)$#',
+        $uri,
+        $m
+    )
     && $method === 'DELETE'
 ) {
 
     AuthMiddleware::handle();
+
     RoleMiddleware::handle('admin');
 
-    $assetController->delete((int)$m[1]);
+    $assetController->delete(
+        (int)$m[1]
+    );
 
     exit;
 }
