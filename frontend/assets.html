@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Parc Informatique</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body>
+
+    <script src="js/api.js"></script>
+    <script src="js/guard.js"></script>
+
+    <script>
+        requireAuth("admin");
+    </script>
+
+    <h1>Parc Informatique</h1>
+
+    <div class="dashboard-grid">
+
+        <a class="dash-card" href="create-asset.html">
+            Ajouter un matériel
+        </a>
+
+        <a class="dash-card" href="dashboard-admin.html">
+            Retour dashboard
+        </a>
+
+    </div>
+
+    <div id="assetsContainer"></div>
+
+    <script src="js/assets.js"></script>
+
+</body>
+
+</html>

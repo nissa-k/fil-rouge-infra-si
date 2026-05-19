@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Modifier matériel</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<script src="js/api.js"></script>
+<script src="js/guard.js"></script>
+
+<script>
+requireAuth("admin");
+</script>
+
+<body>
+
+    <h1>Modifier matériel</h1>
+
+    <div class="login-container">
+
+        <form id="editAssetForm">
+
+            <input
+                type="text"
+                id="name"
+                placeholder="Nom du matériel"
+                required
+            >
+
+            <select id="type" required>
+
+                <option value="pc">
+                    PC
+                </option>
+
+                <option value="laptop">
+                    Laptop
+                </option>
+
+                <option value="serveur">
+                    Serveur
+                </option>
+
+                <option value="switch">
+                    Switch
+                </option>
+
+                <option value="routeur">
+                    Routeur
+                </option>
+
+                <option value="imprimante">
+                    Imprimante
+                </option>
+
+            </select>
+
+            <input
+                type="text"
+                id="marque"
+                placeholder="Marque"
+            >
+
+            <input
+                type="text"
+                id="modele"
+                placeholder="Modèle"
+            >
+
+            <input
+                type="text"
+                id="serial_number"
+                placeholder="Numéro de série"
+            >
+
+            <input
+                type="text"
+                id="os"
+                placeholder="Système d'exploitation"
+            >
+
+            <input
+                type="text"
+                id="ip_address"
+                placeholder="Adresse IP"
+            >
+
+            <input
+                type="text"
+                id="mac_address"
+                placeholder="Adresse MAC"
+            >
+
+            <select id="statut">
+
+                <option value="actif">
+                    Actif
+                </option>
+
+                <option value="maintenance">
+                    Maintenance
+                </option>
+
+                <option value="hors_service">
+                    Hors service
+                </option>
+
+            </select>
+
+            <input
+                type="number"
+                id="assigned_to"
+                placeholder="ID utilisateur assigné"
+            >
+
+            <input
+                type="date"
+                id="purchase_date"
+            >
+
+            <button type="submit">
+                Modifier
+            </button>
+
+        </form>
+
+        <p class="auth-link">
+
+            <a href="assets.html">
+                Retour au parc informatique
+            </a>
+
+        </p>
+
+    </div>
+
+    <script>
+
+        const API_URL =
+            "http://localhost/fil-rouge-infra-si/backend/public/index.php/api/assets";
+
+        const params =
+            new URLSearchParams(window.location.search);
+
+        const assetId = params.get("id");
+
+        /*charger les détails du matériel*/
+
+        async function loadAsset() {
+
+            try {
+
+                const response = await fetch(
+                    `${API_URL}/${assetId}`,
+                    {
+                        credentials: "include"
+                    }
+                );
+
+                const data = await response.json();
+
+                console.log(data);
+
+                if (!data.success) {
+
+                    alert(data.message);
+
+                    return;
+                }
+
+                const asset = data.asset;
+
+                document.getElementById("name").value =
+                    asset.name || "";
+
+                document.getElementById("type").value =
+                    asset.type || "";
+
+                document.getElementById("marque").value =
+                    asset.marque || "";
+
+                document.getElementById("modele").value =
+                    asset.modele || "";
+
+                document.getElementById("serial_number").value =
+                    asset.serial_number || "";
+
+                document.getElementById("os").value =
+                    asset.os || "";
+
+                document.getElementById("ip_address").value =
+                    asset.ip_address || "";
+
+                document.getElementById("mac_address").value =
+                    asset.mac_address || "";
+
+                document.getElementById("statut").value =
+                    asset.statut || "actif";
+
+                document.getElementById("assigned_to").value =
+                    asset.assigned_to || "";
+
+                document.getElementById("purchase_date").value =
+                    asset.purchase_date || "";
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert("Erreur chargement matériel");
+            }
+        }
+
+        /*mettre à jour */
+
+        document
+            .getElementById("editAssetForm")
+            .addEventListener(
+                "submit",
+                async (e) => {
+
+                    e.preventDefault();
+
+                    const assetData = {
+
+                        name:
+                            document.getElementById("name").value,
+
+                        type:
+                            document.getElementById("type").value,
+
+                        marque:
+                            document.getElementById("marque").value,
+
+                        modele:
+                            document.getElementById("modele").value,
+
+                        serial_number:
+                            document.getElementById("serial_number").value,
+
+                        os:
+                            document.getElementById("os").value,
+
+                        ip_address:
+                            document.getElementById("ip_address").value,
+
+                        mac_address:
+                            document.getElementById("mac_address").value,
+
+                        statut:
+                            document.getElementById("statut").value,
+
+                        assigned_to:
+                            document.getElementById("assigned_to").value || null,
+
+                        purchase_date:
+                            document.getElementById("purchase_date").value
+                    };
+
+                    try {
+
+                        const response = await fetch(
+                            `${API_URL}/${assetId}`,
+                            {
+                                method: "PUT",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                },
+
+                                credentials: "include",
+
+                                body: JSON.stringify(assetData)
+                            }
+                        );
+
+                        const data = await response.json();
+
+                        console.log(data);
+
+                        if (!data.success) {
+
+                            alert(data.message);
+
+                            return;
+                        }
+
+                        alert("Matériel modifié");
+
+                        window.location.href = "assets.html";
+
+                    } catch (error) {
+
+                        console.error(error);
+
+                        alert("Erreur serveur");
+                    }
+                }
+            );
+
+        loadAsset();
+
+    </script>
+
+</body>
+
+</html>
