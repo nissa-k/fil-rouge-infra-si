@@ -33,10 +33,107 @@ function getStatusBadge(status) {
     `;
 }
 
+function renderButtons(ticket) {
+
+    // ticket déjà traité ou refusé
+    if (
+        ticket.status === "traitee" ||
+        ticket.status === "refusee"
+    ) {
+
+        return "";
+    }
+
+    return `
+
+        <div class="ticket-actions">
+
+            <button onclick="
+                updateTicketStatus(
+                    ${ticket.id},
+                    'traitee'
+                )
+            ">
+                Traiter
+            </button>
+
+            <button onclick="
+                updateTicketStatus(
+                    ${ticket.id},
+                    'refusee'
+                )
+            ">
+                Refuser
+            </button>
+
+        </div>
+    `;
+}
+
+async function updateTicketStatus(id, status) {
+
+    let message = "";
+
+    if (status === "traitee") {
+
+        message =
+            "Commentaire du traitement :";
+    }
+
+    if (status === "refusee") {
+
+        message =
+            "Pourquoi le ticket est refusé ?";
+    }
+
+    const commentaire = prompt(message);
+
+    if (
+        commentaire === null ||
+        commentaire.trim() === ""
+    ) {
+
+        alert("Commentaire obligatoire");
+
+        return;
+    }
+
+    try {
+
+        const result = await apiFetch(
+            `/api/admin/tickets/${id}/status`,
+            {
+                method: "PUT",
+
+                body: JSON.stringify({
+                    status,
+                    commentaire
+                })
+            }
+        );
+
+        if (result.success) {
+
+            location.reload();
+
+        } else {
+
+            alert("Erreur changement statut");
+        }
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Erreur changement statut");
+    }
+}
+
 async function loadTickets() {
 
     const container =
-        document.getElementById("ticketsContainer");
+        document.getElementById("ticketsContainer")
+        || document.getElementById("tickets");
 
     if (!container) return;
 
@@ -104,6 +201,13 @@ async function loadTickets() {
                     <b>Priorité :</b>
                     ${ticket.priority}
                 </p>
+
+                <p>
+                    <b>Commentaire :</b>
+                    ${ticket.commentaire || "Aucun"}
+                </p>
+
+                ${renderButtons(ticket)}
 
             </div>
 

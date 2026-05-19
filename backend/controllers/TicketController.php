@@ -115,20 +115,23 @@ class TicketController
     //mettre à jour le statut d'un ticket (admin)
 
     public function updateStatus(int $id): void
-    {
-        $data = $this->getJsonInput();
+{
+    $data = $this->getJsonInput();
 
-        $status = $data['status'] ?? '';
+    $status = $data['status'] ?? '';
 
-        $updated = $this->ticketService->updateStatus(
-            $id,
-            $status
-        );
+    $commentaire = $data['commentaire'] ?? '';
 
-        $this->jsonResponse([
-            'success' => $updated
-        ]);
-    }
+    $updated = $this->ticketService->changerStatut(
+        $id,
+        $status,
+        $commentaire
+    );
+
+    $this->jsonResponse([
+        'success' => $updated
+    ]);
+}
 
     public function update(int $id): void
     {
