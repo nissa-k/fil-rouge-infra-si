@@ -230,3 +230,42 @@ form button{
     font-size:22px;
     cursor:pointer;
 }
+
+.ticket-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 20px;
+}
+
+.ticket-status-right {
+
+    padding: 8px 14px;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+
+    font-weight: bold;
+
+    color: white;
+}
+
+.status-en-cours {
+
+    background: #c9a227;
+}
+
+.status-traitee {
+
+    background: #1f9d55;
+}
+
+.status-refusee {
+
+    background: #d64545;
+}

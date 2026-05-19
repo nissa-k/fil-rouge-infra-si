@@ -1,231 +1,312 @@
 async function logout() {
+
     try {
+
         const result = await apiFetch("/api/logout", {
             method: "POST"
         });
 
         if (result.success) {
+
             window.location.href = "login.html";
+
         } else {
-            alert(result.message || "Erreur lors de la déconnexion.");
+
+            alert(result.message || "Erreur logout");
         }
+
     } catch (error) {
-        console.error("Erreur logout :", error);
-        alert("Erreur réseau lors de la déconnexion.");
+
+        console.error(error);
+
+        alert("Erreur réseau");
     }
 }
 
 function escapeQuotes(text) {
+
     return String(text)
         .replace(/'/g, "\\'")
         .replace(/"/g, "&quot;");
 }
 
-function getModeFromUrl() {
-    const params = new URLSearchParams(window.location.search);
-    const status = params.get("status");
+function getStatusBadge(status) {
 
-    if (status === "en_cours") return "en_cours";
-    if (status === "traitee") return "traitee";
-    if (status === "refusee") return "refusee";
+    if (status === "traitee") {
 
-    return "all";
-}
-
-function renderPageTitle(mode) {
-    const h1 = document.querySelector("h1");
-    if (!h1) return;
-
-    if (mode === "en_cours") h1.textContent = "Requêtes en cours";
-    else if (mode === "traitee") h1.textContent = "Requêtes traitées";
-    else if (mode === "refusee") h1.textContent = "Requêtes refusées";
-    else h1.textContent = "Modifier / gérer les requêtes";
-}
-
-function renderButtons(ticket, mode) {
-    if (mode === "en_cours") {
         return `
-            <button onclick="treatTicket(${ticket.id})">Traiter</button>
-            <button onclick="refuseTicket(${ticket.id})">Refuser</button>
+            <div class="ticket-status-right status-traitee">
+                Traité
+            </div>
         `;
     }
 
-    if (mode === "traitee" || mode === "refusee") {
+    if (status === "refusee") {
+
         return `
-            <button onclick="editTicket(${ticket.id}, '${escapeQuotes(ticket.title)}', '${escapeQuotes(ticket.description)}', '${ticket.priority}', '${ticket.status}')">Modifier</button>
-            <button onclick="deleteTicket(${ticket.id})">Supprimer</button>
+            <div class="ticket-status-right status-refusee">
+                Refusé
+            </div>
         `;
     }
 
     return `
-        <button onclick="treatTicket(${ticket.id})">Traiter</button>
-        <button onclick="refuseTicket(${ticket.id})">Refuser</button>
-        <button onclick="editTicket(${ticket.id}, '${escapeQuotes(ticket.title)}', '${escapeQuotes(ticket.description)}', '${ticket.priority}', '${ticket.status}')">Modifier</button>
-        <button onclick="deleteTicket(${ticket.id})">Supprimer</button>
+        <div class="ticket-status-right status-en-cours">
+            En cours
+        </div>
     `;
 }
 
+function renderButtons(ticket) {
+
+    return `
+
+        <div class="ticket-actions">
+
+            <button onclick="updateTicketStatus(${ticket.id}, 'en_cours')">
+                En cours
+            </button>
+
+            <button onclick="updateTicketStatus(${ticket.id}, 'traitee')">
+                Traiter
+            </button>
+
+            <button onclick="updateTicketStatus(${ticket.id}, 'refusee')">
+                Refuser
+            </button>
+
+            <button onclick="
+                editTicket(
+                    ${ticket.id},
+                    '${escapeQuotes(ticket.title)}',
+                    '${escapeQuotes(ticket.description)}',
+                    '${ticket.priority}',
+                    '${ticket.status}'
+                )
+            ">
+                Modifier
+            </button>
+
+            <button onclick="deleteTicket(${ticket.id})">
+                Supprimer
+            </button>
+
+        </div>
+    `;
+}
+
+async function updateTicketStatus(id, status) {
+
+    try {
+
+        const result = await apiFetch(
+            `/api/admin/tickets/${id}/status`,
+            {
+                method: "PUT",
+
+                body: JSON.stringify({
+                    status: status
+                })
+            }
+        );
+
+        if (result.success) {
+
+            location.reload();
+
+        } else {
+
+            alert("Erreur changement statut");
+        }
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Erreur changement statut");
+    }
+}
+
 async function loadTickets() {
-    const container = document.getElementById("ticketsContainer") || document.getElementById("tickets");
+
+    const container =
+        document.getElementById("ticketsContainer")
+        || document.getElementById("tickets");
+
     if (!container) return;
 
     try {
-        const result = await apiFetch("/api/admin/tickets", {
-            method: "GET"
-        });
+
+        const result = await apiFetch(
+            "/api/admin/tickets",
+            {
+                method: "GET"
+            }
+        );
 
         if (!result.success) {
-            container.innerHTML = `<p>${result.message}</p>`;
+
+            container.innerHTML =
+                "<p>Erreur chargement tickets</p>";
+
             return;
         }
 
-        const mode = getModeFromUrl();
-        renderPageTitle(mode);
-
-        let tickets = result.tickets || [];
-
-        if (mode !== "all") {
-            tickets = tickets.filter(ticket => ticket.status === mode);
-        }
+        const tickets = result.tickets || [];
 
         if (tickets.length === 0) {
-            container.innerHTML = "<p>Aucun ticket trouvé.</p>";
+
+            container.innerHTML =
+                "<p>Aucun ticket</p>";
+
             return;
         }
 
         container.innerHTML = tickets.map(ticket => `
+
             <div class="ticket-card">
-                <h3>${ticket.title}</h3>
-                <p><b>ID :</b> ${ticket.id}</p>
-                <p><b>Utilisateur :</b> ${ticket.full_name} (${ticket.email})</p>
-                <p><b>Description :</b> ${ticket.description}</p>
-                <p><b>Priorité :</b> ${ticket.priority}</p>
-                <p><b>Statut :</b> ${ticket.status}</p>
-                ${renderButtons(ticket, mode)}
+
+                <div class="ticket-header">
+
+                    <h3>${ticket.title}</h3>
+
+                    ${getStatusBadge(ticket.status)}
+
+                </div>
+
+                <p>
+                    <b>ID :</b> ${ticket.id}
+                </p>
+
+                <p>
+                    <b>Utilisateur :</b>
+                    ${ticket.full_name}
+                    (${ticket.email})
+                </p>
+
+                <p>
+                    <b>Description :</b>
+                    ${ticket.description}
+                </p>
+
+                <p>
+                    <b>Priorité :</b>
+                    ${ticket.priority}
+                </p>
+
+                ${renderButtons(ticket)}
+
             </div>
+
         `).join("");
-    } catch (error) {
-        console.error(error);
-        container.innerHTML = "<p>Erreur de chargement des tickets.</p>";
-    }
-}
 
-async function treatTicket(id) {
-    try {
-        await apiFetch(`/api/admin/tickets/${id}/status`, {
-            method: "PUT",
-            body: JSON.stringify({ status: "traitee" })
-        });
-        location.reload();
     } catch (error) {
-        console.error(error);
-        alert("Erreur lors du traitement.");
-    }
-}
 
-async function refuseTicket(id) {
-    try {
-        await apiFetch(`/api/admin/tickets/${id}/status`, {
-            method: "PUT",
-            body: JSON.stringify({ status: "refusee" })
-        });
-        location.reload();
-    } catch (error) {
         console.error(error);
-        alert("Erreur lors du refus.");
+
+        container.innerHTML =
+            "<p>Erreur chargement</p>";
     }
 }
 
 async function deleteTicket(id) {
+
     if (!confirm("Supprimer ce ticket ?")) return;
 
     try {
-        await apiFetch(`/api/admin/tickets/${id}`, {
-            method: "DELETE"
-        });
-        location.reload();
+
+        const result = await apiFetch(
+            `/api/admin/tickets/${id}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        if (result.success) {
+
+            location.reload();
+
+        } else {
+
+            alert("Erreur suppression");
+        }
+
     } catch (error) {
+
         console.error(error);
-        alert("Erreur lors de la suppression.");
+
+        alert("Erreur suppression");
     }
 }
 
-async function editTicket(id, currentTitle, currentDescription, currentPriority, currentStatus) {
-    const title = prompt("Nouveau titre :", currentTitle);
+async function editTicket(
+    id,
+    currentTitle,
+    currentDescription,
+    currentPriority,
+    currentStatus
+) {
+
+    const title =
+        prompt("Titre :", currentTitle);
+
     if (title === null) return;
 
-    const description = prompt("Nouvelle description :", currentDescription);
+    const description =
+        prompt("Description :", currentDescription);
+
     if (description === null) return;
 
-    const priority = prompt("Nouvelle priorité (low, medium, high) :", currentPriority);
+    const priority =
+        prompt(
+            "Priorité (low, medium, high) :",
+            currentPriority
+        );
+
     if (priority === null) return;
 
-    const status = prompt("Nouveau statut (en_cours, traitee, refusee) :", currentStatus);
+    const status =
+        prompt(
+            "Statut (en_cours, traitee, refusee) :",
+            currentStatus
+        );
+
     if (status === null) return;
 
     try {
-        const result = await apiFetch(`/api/admin/tickets/${id}`, {
-            method: "PUT",
-            body: JSON.stringify({
-                title,
-                description,
-                priority,
-                status
-            })
-        });
 
-        alert(result.message || "Ticket modifié.");
-        location.reload();
-    } catch (error) {
-        console.error(error);
-        alert("Erreur lors de la modification.");
-    }
-}
+        const result = await apiFetch(
+            `/api/admin/tickets/${id}`,
+            {
+                method: "PUT",
 
-async function loadUsers() {
-    const container = document.getElementById("usersContainer") || document.getElementById("users");
-    if (!container) return;
+                body: JSON.stringify({
+                    title,
+                    description,
+                    priority,
+                    status
+                })
+            }
+        );
 
-    try {
-        const result = await apiFetch("/api/admin/users", {
-            method: "GET"
-        });
+        if (result.success) {
 
-        if (!result.success) {
-            container.innerHTML = `<p>${result.message}</p>`;
-            return;
+            location.reload();
+
+        } else {
+
+            alert("Erreur modification");
         }
 
-        container.innerHTML = (result.users || []).map(user => `
-            <div class="ticket-card">
-                <h3>${user.full_name}</h3>
-                <p><b>ID :</b> ${user.id}</p>
-                <p><b>Email :</b> ${user.email}</p>
-                <p><b>Rôle :</b> ${user.role_name}</p>
-                <button onclick="deleteUser(${user.id})">Supprimer</button>
-            </div>
-        `).join("");
     } catch (error) {
-        console.error(error);
-        container.innerHTML = "<p>Erreur de chargement des utilisateurs.</p>";
-    }
-}
 
-async function deleteUser(id) {
-    if (!confirm("Supprimer cet utilisateur ?")) return;
-
-    try {
-        await apiFetch(`/api/admin/users/${id}`, {
-            method: "DELETE"
-        });
-        location.reload();
-    } catch (error) {
         console.error(error);
-        alert("Erreur lors de la suppression utilisateur.");
+
+        alert("Erreur modification");
     }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+
     loadTickets();
-    loadUsers();
 });
