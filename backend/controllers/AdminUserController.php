@@ -11,7 +11,7 @@ class AdminUserController
         $firstName = $data['first_name'] ?? '';
         $lastName = $data['last_name'] ?? '';
         $email = $data['email'] ?? '';
-        $role = $data['role'] ?? 'user';
+        $role = $data['role'] ?? 'client';
 
         if (!$firstName || !$lastName || !$email) {
             echo json_encode([

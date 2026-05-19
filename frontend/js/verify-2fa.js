@@ -1,14 +1,9 @@
 const form = document.getElementById("verifyForm");
 
 form.addEventListener("submit", async (e) => {
-
     e.preventDefault();
 
-    const code =
-        document.getElementById("code").value;
-
-    const email =
-        localStorage.getItem("2fa_email");
+    const code = document.getElementById("code").value;
 
     try {
 
@@ -21,9 +16,10 @@ form.addEventListener("submit", async (e) => {
                     "Content-Type": "application/json"
                 },
 
+                credentials: "include",
+
                 body: JSON.stringify({
-                    email,
-                    code
+                    code: code
                 })
             }
         );
@@ -32,21 +28,29 @@ form.addEventListener("submit", async (e) => {
 
         console.log(result);
 
-        if (!result.success) {
-
-            alert(result.message);
-
+        if (!response.ok) {
+            alert(result.error || "Code invalide");
             return;
         }
 
-        // 🔥 connecté
-        window.location.href =
-            "dashboard-client.html";
+        const role = result.user?.role;
+
+        if (role === "admin") {
+
+            window.location.href = "dashboard-admin.html";
+
+        } else if (role === "technicien") {
+
+            window.location.href = "dashboard-technicien.html";
+
+        } else {
+
+            window.location.href = "dashboard-client.html";
+        }
 
     } catch (error) {
 
-        console.log(error);
-
+        console.error(error);
         alert("Erreur serveur");
     }
 });

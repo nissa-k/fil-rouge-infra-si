@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Technicien</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<script src="js/api.js"></script>
+<script src="js/guard.js"></script>
+
+<script>
+requireAuth("technicien");
+</script>
+
+<body>
+
+    <h1>Dashboard Technicien</h1>
+
+    <div class="dashboard-grid">
+
+        <a class="dash-card" href="tickets-technicien.html?status=en_cours">
+            Requêtes en cours
+        </a>
+
+        <a class="dash-card" href="tickets-technicien.html?status=traitee">
+            Requêtes traitées
+        </a>
+
+        <a class="dash-card" href="tickets-technicien.html?status=refusee">
+            Requêtes refusées
+        </a>
+
+        <button class="dash-card logout-btn" onclick="logout()">
+            Logout
+        </button>
+
+    </div>
+
+    <script>
+
+        async function logout() {
+
+            await fetch(
+                "http://localhost/fil-rouge-infra-si/backend/public/index.php/api/logout",
+                {
+                    method: "POST",
+                    credentials: "include"
+                }
+            );
+
+            window.location.href = "login.html";
+        }
+
+    </script>
+
+</body>
+
+</html>

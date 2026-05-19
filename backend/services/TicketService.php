@@ -11,8 +11,8 @@ class TicketService
         $this->db = Database::getConnection();
     }
 
-    //creer un ticket
-    
+    // créer un ticket
+
     public function create(
         int $userId,
         string $title,
@@ -41,7 +41,7 @@ class TicketService
         ]);
     }
 
-    //tout les tickets
+    // tous les tickets
 
     public function getAll(): array
     {
@@ -59,7 +59,7 @@ class TicketService
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    //tickets d'un utilisateur
+    // tickets d'un utilisateur
 
     public function getByUser($userId): array
     {
@@ -75,7 +75,7 @@ class TicketService
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    //ticket par id
+    // ticket par id
 
     public function getById(int $id): ?array
     {
@@ -92,7 +92,7 @@ class TicketService
         return $ticket ?: null;
     }
 
-    //mettre à jour un ticket (admin)
+    // mettre à jour un ticket (admin)
 
     public function update(
         int $id,
@@ -121,7 +121,7 @@ class TicketService
         ]);
     }
 
-    //mettre à jour le statut d'un ticket (admin)
+    // mettre à jour le statut d'un ticket (admin)
 
     public function updateStatus(
         int $id,
@@ -140,7 +140,7 @@ class TicketService
         ]);
     }
 
-    //supprimer un ticket (admin)
+    // supprimer un ticket (admin)
 
     public function delete(int $id): bool
     {
@@ -150,5 +150,45 @@ class TicketService
         ");
 
         return $stmt->execute([$id]);
+    }
+
+    // récupérer les tickets d'un technicien par statut
+
+    public function getByTechAndStatus(int $technicienId, string $status): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT
+                tickets.*,
+                users.full_name AS client
+            FROM tickets
+            JOIN users ON users.id = tickets.user_id
+            WHERE tickets.technicien_id = ?
+              AND tickets.status = ?
+            ORDER BY tickets.created_at DESC
+        ");
+
+        $stmt->execute([$technicienId, $status]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // traiter ou refuser un ticket (technicien)
+
+    public function changerStatut(int $id, string $status, string $commentaire): bool
+    {
+        $stmt = $this->db->prepare("
+            UPDATE tickets
+            SET
+                status      = ?,
+                commentaire = ?,
+                updated_at  = NOW()
+            WHERE id = ?
+        ");
+
+        return $stmt->execute([
+            $status,
+            $commentaire,
+            $id
+        ]);
     }
 }

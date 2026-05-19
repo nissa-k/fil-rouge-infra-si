@@ -34,9 +34,7 @@ form.addEventListener("submit", async (e) => {
 
         const result = JSON.parse(text);
 
-        // =========================
-        // ERREUR
-        // =========================
+        //erreur de connexion
 
         if (!result.success) {
 
@@ -45,9 +43,7 @@ form.addEventListener("submit", async (e) => {
             return;
         }
 
-        // =========================
-        // FORCE CHANGE PASSWORD
-        // =========================
+        //modification du mot de passe à la première connexion
 
         if (result.must_change_password) {
 
@@ -57,9 +53,7 @@ form.addEventListener("submit", async (e) => {
             return;
         }
 
-        // =========================
-        // 2FA
-        // =========================
+        //a2f
 
         if (result.requires_2fa) {
 
@@ -74,12 +68,22 @@ form.addEventListener("submit", async (e) => {
             return;
         }
 
-        // =========================
-        // LOGIN NORMAL
-        // =========================
+        //redirection selon le rôle
 
-        window.location.href =
-            "dashboard-client.html";
+        const role = result.user?.role ?? result.role;
+
+        if (role === 'admin') {
+
+            window.location.href = "dashboard-admin.html";
+
+        } else if (role === 'technicien') {
+
+            window.location.href = "dashboard-technicien.html";
+
+        } else {
+
+            window.location.href = "dashboard-client.html";
+        }
 
     } catch (error) {
 

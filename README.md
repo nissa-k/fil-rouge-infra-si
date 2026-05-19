@@ -92,14 +92,12 @@ fil-rouge-infra-si/
 Comptes de test :
 
 Admin
-
-email : admin@test.com ou safaazemmar@gmail.com
-mdp : admin123          ou  123456
-
+safaazemmar@gmail.com
+mdp : admin123         
 Client
 
-email : client@test.com
-mdp : client123 ou 123456
+email : safouzemmar@gmail.com
+mdp :  123456
 
 Installation
 click sur ce lien 
@@ -112,8 +110,7 @@ créer la base de données filrouge ou importer le fichier SQL
 
 ouvrir dans le navigateur :
 
-http://localhost/FIL-ROUGE-INFRA-SI
-
+http://localhost/fil-rouge-infra-si/frontend/login.html
 
 
 
