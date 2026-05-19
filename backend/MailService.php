@@ -17,19 +17,17 @@ class MailService {
 
             $mail->isSMTP();
 
-            $mail->Host = 'smtp.gmail.com';
+            $mail->Host = $_ENV['MAIL_HOST'];
             $mail->SMTPAuth = true;
 
-            // 🔥 TON EMAIL GMAIL
-            $mail->Username = 'safouzemmar@gmail.com';
+            $mail->Username = $_ENV['MAIL_USERNAME'];
 
-            // 🔥 MOT DE PASSE APPLICATION GOOGLE
-            $mail->Password = 'evpkkongbkjvkjuz ';
+            $mail->Password = $_ENV['MAIL_PASSWORD'];
 
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = 587;
+            $mail->Port = $_ENV['MAIL_PORT'];
 
-            $mail->setFrom('safouzemmar@gmail.com', 'Fil Rouge');
+            $mail->setFrom($_ENV['MAIL_FROM'], 'Fil Rouge');
 
             $mail->addAddress($to);
 
