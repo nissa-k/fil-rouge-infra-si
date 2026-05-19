@@ -29,9 +29,7 @@ class TicketController
         return is_array($data) ? $data : [];
     }
 
-    // =========================
-    // CREATE CLIENT TICKET
-    // =========================
+    //creer un ticket
 
     public function create(): void
     {
@@ -80,9 +78,7 @@ class TicketController
         ]);
     }
 
-    // =========================
-    // CLIENT TICKETS
-    // =========================
+    //tickets de l'utilisateur connecté
 
     public function myTickets(): void
     {
@@ -104,9 +100,7 @@ class TicketController
         ]);
     }
 
-    // =========================
-    // ADMIN ALL TICKETS
-    // =========================
+    //tous les tickets (admin)
 
     public function index(): void
     {
@@ -117,6 +111,8 @@ class TicketController
             'tickets' => $tickets
         ]);
     }
+
+    //mettre à jour le statut d'un ticket (admin)
 
     public function updateStatus(int $id): void
     {

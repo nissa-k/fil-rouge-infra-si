@@ -7,6 +7,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 class MailService {
 
+    //envoi du mail de réinitialisation de mot de passe
     public static function sendResetPasswordMail($to, $token) {
 
         $resetLink = "http://localhost/fil-rouge-infra-si/frontend/reset-password.html?token=" . $token;

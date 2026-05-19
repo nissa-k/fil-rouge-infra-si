@@ -24,12 +24,13 @@ if ($uri === '') {
     $uri = '/';
 }
 
+// Initialisation des contrôleurs
 $authController = new AuthController();
 $ticketController = new TicketController();
 $userController = new UserController();
 $clientTicketController = new ClientTicketController();
 
-/* ================= AUTH ================= */
+/*auth */
 
 if ($uri === '/api/login' && $method === 'POST') {
     $authController->login();
@@ -54,7 +55,7 @@ if ($uri === '/api/change-password' && $method === 'POST') {
     exit;
 }
 
-/* ================= CLIENT ================= */
+/*client*/
 
 if ($uri === '/api/client/tickets' && $method === 'GET') {
     AuthMiddleware::handle();
@@ -70,7 +71,7 @@ if ($uri === '/api/client/tickets' && $method === 'POST') {
     exit;
 }
 
-/* ================= ADMIN TICKETS ================= */
+/*ticket admin*/
 
 if ($uri === '/api/admin/tickets' && $method === 'GET') {
     AuthMiddleware::handle();
@@ -86,7 +87,7 @@ if (preg_match('#^/api/admin/tickets/(\d+)$#', $uri, $m) && $method === 'DELETE'
     exit;
 }
 
-/* ================= ADMIN USERS ================= */
+/*user admin*/
 
 if ($uri === '/api/admin/users' && $method === 'GET') {
     AuthMiddleware::handle();
@@ -102,7 +103,7 @@ if (preg_match('#^/api/admin/users/(\d+)$#', $uri, $m) && $method === 'DELETE') 
     exit;
 }
 
-/* 🔥 CREATE USER (IMPORTANT) */
+/*creer user*/
 
 if ($uri === '/api/admin/create-user' && $method === 'POST') {
     AuthMiddleware::handle();
@@ -111,7 +112,7 @@ if ($uri === '/api/admin/create-user' && $method === 'POST') {
     exit;
 }
 
-/* ================= 404 ================= */
+/*erreur 404*/
 
 http_response_code(404);
 echo json_encode([

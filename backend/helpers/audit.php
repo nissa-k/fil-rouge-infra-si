@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../config/database.php';
 
+// Fonction pour enregistrer une action dans les logs d'audit
 function logAction($userId, $action, $entity = null, $entityId = null): void
 {
     try {
@@ -17,6 +18,7 @@ function logAction($userId, $action, $entity = null, $entityId = null): void
             VALUES (:user_id, :action, :entity, :entity_id, :ip, :user_agent, NOW())
         ";
 
+        // Exécution de la requête avec les paramètres
         $stmt = $pdo->prepare($query);
         $stmt->execute([
             'user_id' => $userId,

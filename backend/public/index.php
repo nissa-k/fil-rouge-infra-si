@@ -29,10 +29,6 @@ $uri = str_replace(
     $uri
 );
 
-// =========================
-// AUTH
-// =========================
-
 if ($uri === '/api/login' && $method === 'POST') {
 
     $authController->login();
@@ -75,9 +71,7 @@ elseif ($uri === '/api/reset-password' && $method === 'POST') {
     exit;
 }
 
-// =========================
-// CLIENT TICKETS
-// =========================
+// ticket client
 
 elseif ($uri === '/api/client/tickets' && $method === 'POST') {
 
@@ -91,9 +85,7 @@ elseif ($uri === '/api/client/tickets' && $method === 'GET') {
     exit;
 }
 
-// =========================
-// USERS ADMIN
-// =========================
+//user admin
 
 elseif ($uri === '/api/admin/users' && $method === 'GET') {
 
@@ -116,9 +108,7 @@ elseif (
     exit;
 }
 
-// =========================
-// TICKETS ADMIN
-// =========================
+//ticket admin
 
 elseif ($uri === '/api/admin/tickets' && $method === 'GET') {
 
@@ -153,9 +143,7 @@ elseif (
     exit;
 }
 
-// =========================
-// 404
-// =========================
+//gestion erreur 404
 
 http_response_code(404);
 

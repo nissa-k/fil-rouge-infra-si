@@ -6,6 +6,7 @@ class AuthService
 {
     private User $userModel;
 
+    // Constructeur pour initialiser le modèle User
     public function __construct()
     {
         $this->userModel = new User();

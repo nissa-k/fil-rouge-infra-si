@@ -5,9 +5,7 @@ require_once __DIR__ . '/../config/database.php';
 
 class UserController {
 
-    // =========================
-    // GET ALL USERS
-    // =========================
+    // liste des utilisateurs
     public function index() {
 
         try {
@@ -39,9 +37,7 @@ class UserController {
         }
     }
 
-    // =========================
-    // CREATE USER
-    // =========================
+    // créer un utilisateur
     public function create() {
 
         try {
@@ -92,7 +88,7 @@ class UserController {
 
             $fullName = $firstName . ' ' . $lastName;
 
-            // 🔥 utilise le mot de passe DU FORMULAIRE
+            // Hash du mot de passe
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
             $stmt = $db->prepare("
@@ -131,9 +127,7 @@ class UserController {
         }
     }
 
-    // =========================
-    // DELETE USER
-    // =========================
+    // supprimer un utilisateur
     public function delete($id) {
 
         try {
@@ -153,7 +147,8 @@ class UserController {
             ]);
 
         } catch (Exception $e) {
-
+            
+            // En cas d'erreur, on retourne une réponse 500 avec le message d'erreur
             http_response_code(500);
 
             echo json_encode([

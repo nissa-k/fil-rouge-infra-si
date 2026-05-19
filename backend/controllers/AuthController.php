@@ -13,9 +13,8 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 class AuthController {
 
-    // =========================
-    // LOGIN + 2FA
-    // =========================
+    // login + 2FA
+
     public function login() {
 
         $data = json_decode(file_get_contents("php://input"), true);
@@ -50,9 +49,7 @@ class AuthController {
             return;
         }
 
-        // =========================
-        // FORCE CHANGE PASSWORD
-        // =========================
+        // modification du mot de passe à la première connexion
 
         if ((int)$user['must_change_password'] === 1) {
 
@@ -71,9 +68,7 @@ class AuthController {
             return;
         }
 
-        // =========================
-        // GENERATE 2FA CODE
-        // =========================
+        //code de double authentification
 
         $code = rand(100000, 999999);
 
@@ -92,9 +87,7 @@ class AuthController {
             $user['id']
         ]);
 
-        // =========================
-        // SEND MAIL
-        // =========================
+        //envoi du mail
 
         $mail = new PHPMailer(true);
 
@@ -102,17 +95,17 @@ class AuthController {
 
             $mail->isSMTP();
 
-            $mail->Host = 'smtp.gmail.com';
+            $mail->Host = $_ENV['MAIL_HOST'];
             $mail->SMTPAuth = true;
 
-            $mail->Username = 'safouzemmar@gmail.com';
-            $mail->Password = 'evpkkongbkjvkjuz';
+            $mail->Username = $_ENV['MAIL_USERNAME'];
+            $mail->Password = $_ENV['MAIL_PASSWORD'];
 
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = 587;
+            $mail->Port = $_ENV['MAIL_PORT'];
 
             $mail->setFrom(
-                'safouzemmar@gmail.com',
+                $_ENV['MAIL_FROM'],
                 'Fil Rouge'
             );
 
@@ -151,9 +144,7 @@ class AuthController {
         ]);
     }
 
-    // =========================
-    // VERIFY 2FA
-    // =========================
+    // vérification du code de double authentification
     public function verify2FA() {
 
         $data = json_decode(file_get_contents("php://input"), true);
@@ -199,7 +190,7 @@ class AuthController {
             return;
         }
 
-        // CLEAR CODE
+        // clear 2FA code
         $clear = $db->prepare("
             UPDATE users
             SET
@@ -226,9 +217,7 @@ class AuthController {
         ]);
     }
 
-    // =========================
-    // LOGOUT
-    // =========================
+    // logout
     public function logout() {
 
         session_destroy();
@@ -238,9 +227,7 @@ class AuthController {
         ]);
     }
 
-    // =========================
-    // ME
-    // =========================
+    // verifie si l'utilisateur est connecté et retourne ses infos
     public function me() {
 
         if (!isset($_SESSION['user'])) {
@@ -260,9 +247,7 @@ class AuthController {
         ]);
     }
 
-    // =========================
-    // CHANGE PASSWORD
-    // =========================
+    // changement de mot de passe
     public function changePassword() {
 
         if (!isset($_SESSION['user'])) {
@@ -311,9 +296,7 @@ class AuthController {
         ]);
     }
 
-    // =========================
-    // FORGOT PASSWORD
-    // =========================
+    // mot de passe oublié
     public function forgotPassword() {
 
         $data = json_decode(file_get_contents("php://input"), true);
@@ -375,17 +358,17 @@ class AuthController {
 
             $mail->isSMTP();
 
-            $mail->Host = 'smtp.gmail.com';
+            $mail->Host = $_ENV['MAIL_HOST'];
             $mail->SMTPAuth = true;
 
-            $mail->Username = 'safouzemmar@gmail.com';
-            $mail->Password = 'evpkkongbkjvkjuz';
+            $mail->Username = $_ENV['MAIL_USERNAME'];
+            $mail->Password = $_ENV['MAIL_PASSWORD'];
 
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = 587;
+            $mail->Port = $_ENV['MAIL_PORT'];
 
             $mail->setFrom(
-                'safouzemmar@gmail.com',
+                $_ENV['MAIL_FROM'],
                 'Fil Rouge'
             );
 
@@ -419,9 +402,7 @@ class AuthController {
         }
     }
 
-    // =========================
-    // RESET PASSWORD
-    // =========================
+    // réinitialisation du mot de passe
     public function resetPassword() {
 
         $data = json_decode(file_get_contents("php://input"), true);

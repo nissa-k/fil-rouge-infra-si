@@ -11,10 +11,8 @@ class TicketService
         $this->db = Database::getConnection();
     }
 
-    // =========================
-    // CREATE TICKET
-    // =========================
-
+    //creer un ticket
+    
     public function create(
         int $userId,
         string $title,
@@ -43,9 +41,7 @@ class TicketService
         ]);
     }
 
-    // =========================
-    // GET ALL TICKETS
-    // =========================
+    //tout les tickets
 
     public function getAll(): array
     {
@@ -63,9 +59,7 @@ class TicketService
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // =========================
-    // GET USER TICKETS
-    // =========================
+    //tickets d'un utilisateur
 
     public function getByUser($userId): array
     {
@@ -81,9 +75,7 @@ class TicketService
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // =========================
-    // GET ONE TICKET
-    // =========================
+    //ticket par id
 
     public function getById(int $id): ?array
     {
@@ -100,9 +92,7 @@ class TicketService
         return $ticket ?: null;
     }
 
-    // =========================
-    // UPDATE TICKET
-    // =========================
+    //mettre à jour un ticket (admin)
 
     public function update(
         int $id,
@@ -131,9 +121,7 @@ class TicketService
         ]);
     }
 
-    // =========================
-    // UPDATE STATUS
-    // =========================
+    //mettre à jour le statut d'un ticket (admin)
 
     public function updateStatus(
         int $id,
@@ -152,9 +140,7 @@ class TicketService
         ]);
     }
 
-    // =========================
-    // DELETE TICKET
-    // =========================
+    //supprimer un ticket (admin)
 
     public function delete(int $id): bool
     {

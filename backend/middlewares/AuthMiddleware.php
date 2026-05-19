@@ -2,6 +2,7 @@
 
 class AuthMiddleware
 {
+    // Middleware pour vérifier l'authentification
     public static function handle(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
