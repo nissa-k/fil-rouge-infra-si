@@ -11,6 +11,8 @@
 
     <h1>Gestion des tickets</h1>
 
+    <p id="filterLabel" style="margin-bottom: 10px; color: #aaa; font-size: 18px;"></p>
+
     <a href="dashboard-admin.html" class="back-btn">Retour dashboard</a>
 
     <div id="ticketsContainer"></div>
@@ -18,28 +20,6 @@
     <script src="js/api.js"></script>
     <script src="js/guard.js"></script>
     <script>requireAuth("admin");</script>
-
-    <script>
-
-        (async () => {
-
-            const user = await requireAuth();
-
-            if (!user) return;
-
-            if (
-                user.role !== "admin" &&
-                user.role !== "technicien"
-            ) {
-
-                window.location.href = "login.html";
-                return;
-            }
-
-        })();
-
-    </script>
-
     <script src="js/admin.js"></script>
 
 </body>

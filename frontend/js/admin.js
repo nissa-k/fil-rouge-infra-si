@@ -60,7 +60,6 @@ function getStatusBadge(status) {
 function renderButtons(ticket) {
 
     return `
-
         <div class="ticket-actions">
 
             <button onclick="updateTicketStatus(${ticket.id}, 'en_cours')">
@@ -103,10 +102,7 @@ async function updateTicketStatus(id, status) {
             `/api/admin/tickets/${id}/status`,
             {
                 method: "PUT",
-
-                body: JSON.stringify({
-                    status: status
-                })
+                body: JSON.stringify({ status: status })
             }
         );
 
@@ -135,29 +131,53 @@ async function loadTickets() {
 
     if (!container) return;
 
+    // Filtre depuis l'URL (?status=refusee)
+    const params = new URLSearchParams(window.location.search);
+    const statusFilter = params.get("status");
+
+    // Afficher le filtre actif
+    if (statusFilter) {
+
+        const labels = {
+            "en_cours": "En cours",
+            "traitee":  "Traités",
+            "refusee":  "Refusés"
+        };
+
+        const filterLabel = document.getElementById("filterLabel");
+
+        if (filterLabel) {
+
+            filterLabel.textContent =
+                "Filtre : " + (labels[statusFilter] || statusFilter);
+        }
+    }
+
     try {
 
-        const result = await apiFetch(
-            "/api/admin/tickets",
-            {
-                method: "GET"
-            }
-        );
+        const result = await apiFetch("/api/admin/tickets", { method: "GET" });
 
         if (!result.success) {
 
-            container.innerHTML =
-                "<p>Erreur chargement tickets</p>";
+            container.innerHTML = "<p>Erreur chargement tickets</p>";
 
             return;
         }
 
-        const tickets = result.tickets || [];
+        let tickets = result.tickets || [];
+
+        // Appliquer le filtre si présent
+        if (statusFilter) {
+
+            tickets = tickets.filter(t => t.status === statusFilter);
+        }
 
         if (tickets.length === 0) {
 
             container.innerHTML =
-                "<p>Aucun ticket</p>";
+                "<p>Aucun ticket" +
+                (statusFilter ? " pour ce statut" : "") +
+                "</p>";
 
             return;
         }
@@ -167,16 +187,11 @@ async function loadTickets() {
             <div class="ticket-card">
 
                 <div class="ticket-header">
-
                     <h3>${ticket.title}</h3>
-
                     ${getStatusBadge(ticket.status)}
-
                 </div>
 
-                <p>
-                    <b>ID :</b> ${ticket.id}
-                </p>
+                <p><b>ID :</b> ${ticket.id}</p>
 
                 <p>
                     <b>Utilisateur :</b>
@@ -184,15 +199,9 @@ async function loadTickets() {
                     (${ticket.email})
                 </p>
 
-                <p>
-                    <b>Description :</b>
-                    ${ticket.description}
-                </p>
+                <p><b>Description :</b> ${ticket.description}</p>
 
-                <p>
-                    <b>Priorité :</b>
-                    ${ticket.priority}
-                </p>
+                <p><b>Priorité :</b> ${ticket.priority}</p>
 
                 ${renderButtons(ticket)}
 
@@ -204,8 +213,7 @@ async function loadTickets() {
 
         console.error(error);
 
-        container.innerHTML =
-            "<p>Erreur chargement</p>";
+        container.innerHTML = "<p>Erreur chargement</p>";
     }
 }
 
@@ -217,9 +225,7 @@ async function deleteTicket(id) {
 
         const result = await apiFetch(
             `/api/admin/tickets/${id}`,
-            {
-                method: "DELETE"
-            }
+            { method: "DELETE" }
         );
 
         if (result.success) {
@@ -247,30 +253,16 @@ async function editTicket(
     currentStatus
 ) {
 
-    const title =
-        prompt("Titre :", currentTitle);
-
+    const title = prompt("Titre :", currentTitle);
     if (title === null) return;
 
-    const description =
-        prompt("Description :", currentDescription);
-
+    const description = prompt("Description :", currentDescription);
     if (description === null) return;
 
-    const priority =
-        prompt(
-            "Priorité (low, medium, high) :",
-            currentPriority
-        );
-
+    const priority = prompt("Priorité (low, medium, high) :", currentPriority);
     if (priority === null) return;
 
-    const status =
-        prompt(
-            "Statut (en_cours, traitee, refusee) :",
-            currentStatus
-        );
-
+    const status = prompt("Statut (en_cours, traitee, refusee) :", currentStatus);
     if (status === null) return;
 
     try {
@@ -279,13 +271,7 @@ async function editTicket(
             `/api/admin/tickets/${id}`,
             {
                 method: "PUT",
-
-                body: JSON.stringify({
-                    title,
-                    description,
-                    priority,
-                    status
-                })
+                body: JSON.stringify({ title, description, priority, status })
             }
         );
 
@@ -306,7 +292,96 @@ async function editTicket(
     }
 }
 
+async function loadUsers() {
+
+    const container = document.getElementById("usersContainer");
+
+    if (!container) return;
+
+    try {
+
+        const result = await apiFetch("/api/admin/users", { method: "GET" });
+
+        if (!result.success) {
+
+            container.innerHTML = "<p>Erreur chargement utilisateurs</p>";
+
+            return;
+        }
+
+        const users = result.users || [];
+
+        if (users.length === 0) {
+
+            container.innerHTML = "<p>Aucun utilisateur</p>";
+
+            return;
+        }
+
+        container.innerHTML = users.map(user => `
+
+            <div class="user-card">
+
+                <div class="ticket-header">
+                    <h3>${user.full_name}</h3>
+                    <div class="ticket-status-right" style="background:#555">
+                        ${user.role}
+                    </div>
+                </div>
+
+                <p><b>ID :</b> ${user.id}</p>
+
+                <p><b>Email :</b> ${user.email}</p>
+
+                <div class="ticket-actions">
+                    <button onclick="deleteUser(${user.id})">
+                        Supprimer
+                    </button>
+                </div>
+
+            </div>
+
+        `).join("");
+
+    } catch (error) {
+
+        console.error(error);
+
+        container.innerHTML = "<p>Erreur chargement</p>";
+    }
+}
+
+async function deleteUser(id) {
+
+    if (!confirm("Supprimer cet utilisateur ?")) return;
+
+    try {
+
+        const result = await apiFetch(
+            `/api/admin/users/${id}`,
+            { method: "DELETE" }
+        );
+
+        if (result.success) {
+
+            location.reload();
+
+        } else {
+
+            alert("Erreur suppression");
+        }
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Erreur suppression");
+    }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
 
     loadTickets();
+
+    loadUsers();
 });

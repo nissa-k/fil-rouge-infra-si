@@ -85,6 +85,8 @@ button:hover {
     font-size: 18px;
 }
 
+/* ── Dashboard grid ── */
+
 .dashboard-grid {
     margin: 50px auto 0;
     display: grid;
@@ -114,6 +116,8 @@ button:hover {
     background: #242424;
     text-decoration: none;
 }
+
+/* ── Ticket / user cards ── */
 
 .ticket-card,
 .user-card,
@@ -162,13 +166,200 @@ p a {
     font-size: 20px;
 }
 
+/* ── Forms ── */
+
+*form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+form input,
+form select {
+    width: 400px;
+    padding: 18px;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    background: #ddd;
+}
+
+form button {
+    width: 180px;
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    background: #666;
+    color: white;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+/* ── Ticket header & badges ── */
+
+.ticket-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.ticket-status-right {
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+    white-space: nowrap;
+}
+
+.status-en-cours { background: #c9a227; }
+.status-traitee  { background: #1f9d55; }
+.status-refusee  { background: #d64545; }
+
+/* ── Messages ── */
+
+.ticket-messages {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #333;
+}
+
+.messages-list {
+    max-height: 250px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+
+.message-item {
+    background: #1f1f1f;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.message-item small {
+    opacity: 0.7;
+}
+
+.ticket-messages textarea {
+    width: 100%;
+    min-height: 80px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+/* ── Stats grid : toujours 3 colonnes x 2 lignes ── */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 40px auto 30px auto;
+    width: 100%;
+    max-width: 700px;
+    padding: 0 10px;
+}
+
+.stat-card {
+    aspect-ratio: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 4px;
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    transition: transform 0.2s;
+    text-decoration: none;
+    padding: 12px;
+}
+
+.stat-card:hover {
+    transform: scale(1.03);
+    text-decoration: none;
+}
+
+.stat-card h3 {
+    font-size: clamp(12px, 2.5vw, 18px);
+    font-weight: bold;
+    color: white;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.stat-card span {
+    display: block;
+    margin-top: 12px;
+    font-size: clamp(30px, 6vw, 48px);
+    color: white;
+    font-weight: bold;
+}
+
+/* ── Couleurs ── */
+
+.blue   { background: #2563eb; }
+.yellow { background: #e4c309; }
+.green  { background: #16a34a; }
+.red    { background: #ff0000; }
+.purple { background: #7c3aed; }
+.orange { background: #e47e09; }
+
+/* ── Logout petit bouton ── */
+
+.logout-btn-small {
+    display: inline-block;
+    padding: 6px 16px;
+    font-size: 13px;
+    background: #1f1f1f;
+    color: #aaa;
+    border: 1px solid #444;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: 0.2s;
+    font-family: inherit;
+}
+
+.logout-btn-small:hover {
+    background: #dc2626;
+    color: #fff;
+    border-color: #dc2626;
+}
+
+/* ── Back button ── */
+
+.back-btn {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 24px;
+    background: #1f1f1f;
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    transition: 0.2s;
+    border: 1px solid #333;
+}
+
+.back-btn:hover {
+    background: #2b2b2b;
+    transform: scale(1.03);
+    text-decoration: none;
+}
+
+/* ── Responsive ── */
+
 @media (max-width: 768px) {
+
     body {
-        padding: 30px 15px;
+        padding: 20px 12px;
     }
 
     h1 {
-        font-size: 40px;
+        font-size: 32px;
     }
 
     .login-container {
@@ -187,214 +378,47 @@ p a {
         font-size: 18px;
     }
 
+    .ticket-card,
+    .user-card,
+    .card {
+        padding: 16px;
+    }
+
     .ticket-card h3,
     .user-card h3,
     .card h3 {
-        font-size: 24px;
+        font-size: 20px;
     }
 
     .ticket-card p,
     .user-card p,
     .card p {
-        font-size: 18px;
+        font-size: 16px;
+    }
+
+    .ticket-card button,
+    .user-card button,
+    .card button {
+        font-size: 14px;
+        padding: 10px 14px;
+    }
+
+    /* Stats : 2 colonnes sur petit écran */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 100%;
+        gap: 10px;
     }
 }
-*form{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:15px;
+
+@media (max-width: 400px) {
+
+    h1 {
+        font-size: 26px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
 }
-
-form input,
-form select{
-    width:400px;
-    padding:18px;
-    border:none;
-    border-radius:10px;
-    font-size:18px;
-    background:#ddd;
-}
-
-form button{
-    width:180px;
-    padding:15px;
-    border:none;
-    border-radius:10px;
-    background:#666;
-    color:white;
-    font-size:22px;
-    cursor:pointer;
-}
-
-.ticket-header {
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    margin-bottom: 20px;
-}
-
-.ticket-status-right {
-
-    padding: 8px 14px;
-
-    border-radius: 8px;
-
-    font-size: 14px;
-
-    font-weight: bold;
-
-    color: white;
-}
-
-.status-en-cours {
-
-    background: #c9a227;
-}
-
-.status-traitee {
-
-    background: #1f9d55;
-}
-
-.status-refusee {
-
-    background: #d64545;
-}
-.ticket-messages {
-
-    margin-top: 20px;
-
-    padding-top: 15px;
-
-    border-top: 1px solid #333;
-}
-
-.messages-list {
-
-    max-height: 250px;
-
-    overflow-y: auto;
-
-    margin-bottom: 10px;
-}
-
-.message-item {
-
-    background: #1f1f1f;
-
-    padding: 10px;
-
-    border-radius: 8px;
-
-    margin-bottom: 10px;
-}
-
-.message-item small {
-
-    opacity: 0.7;
-}
-
-.ticket-messages textarea {
-
-    width: 100%;
-
-    min-height: 80px;
-
-    margin-bottom: 10px;
-
-    border-radius: 8px;
-
-    padding: 10px;
-}
-.stats-grid {
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 12px;
-    width: fit-content;
-    margin: 55px auto 30px auto;
-}
-
-.stat-card {
-
-    width: 200px;
-    height: 200px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    border-radius: 2px;
-    color: white;
-    text-align: center;
-    font-weight: bold;
-    transition: 0.2s;
-    margin: auto;
-}
-
-.stat-card:hover {
-
-    transform: scale(1.03);
-}
-
-.stat-card span {
-
-    display: block;
-
-    margin-top: 15px;
-
-    font-size: 42px;
-}
-
-.blue {
-    background: #2563eb;
-}
-
-.green {
-    background: #16a34a;
-}
-
-.red {
-    background: #ff0000;
-}
-
-.yellow {
-    background: #e4c309;
-}
-
-.purple {
-    background: #7c3aed;
-}
-.back-btn {
-
-    display: inline-block;
-
-    margin-top: 20px;
-
-    padding: 12px 24px;
-
-    background: #1f1f1f;
-
-    color: white;
-
-    text-decoration: none;
-
-    border-radius: 10px;
-
-    transition: 0.2s;
-
-    border: 1px solid #333;
-}
-
-.back-btn:hover {
-
-    background: #2b2b2b;
-
-    transform: scale(1.03);
-}
-
