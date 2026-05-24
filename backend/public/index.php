@@ -282,11 +282,15 @@ elseif (
     && $method === 'GET'
 ) {
 
-    $ticketService =
-        new TicketService();
+    $ticketService = new TicketService();
+    $userService   = new UserService();
 
-    $userService =
-        new UserService();
+    require_once __DIR__ . '/../config/database.php';
+    $pdo = Database::getConnection();
+
+    $assets = $pdo
+        ->query("SELECT COUNT(*) FROM assets")
+        ->fetchColumn();
 
     echo json_encode([
 
@@ -295,30 +299,21 @@ elseif (
         "stats" => [
 
             "en_cours" =>
-                $ticketService
-                    ->countByStatus(
-                        "en_cours"
-                    ),
+                $ticketService->countByStatus("en_cours"),
 
             "traitee" =>
-                $ticketService
-                    ->countByStatus(
-                        "traitee"
-                    ),
+                $ticketService->countByStatus("traitee"),
 
             "refusee" =>
-                $ticketService
-                    ->countByStatus(
-                        "refusee"
-                    ),
+                $ticketService->countByStatus("refusee"),
 
             "total_tickets" =>
-                $ticketService
-                    ->countAll(),
+                $ticketService->countAll(),
 
             "users" =>
-                $userService
-                    ->countAll()
+                $userService->countAll(),
+
+            "assets" => (int) $assets,
         ]
     ]);
 

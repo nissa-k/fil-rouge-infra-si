@@ -21,9 +21,8 @@ class AdminUserController
             return;
         }
 
-        $pdo = Database::connect();
+        $pdo = Database::getConnection();
 
-        // Vérifier email
         $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
         $stmt->execute([$email]);
 
@@ -35,7 +34,6 @@ class AdminUserController
             return;
         }
 
-        // mot de passe par défaut
         $defaultPassword = password_hash("123456", PASSWORD_DEFAULT);
 
         $stmt = $pdo->prepare("
@@ -58,7 +56,7 @@ class AdminUserController
 
     public function getStats()
     {
-        $pdo = Database::connect();
+        $pdo = Database::getConnection();
 
         $total = $pdo
             ->query("SELECT COUNT(*) FROM tickets")
