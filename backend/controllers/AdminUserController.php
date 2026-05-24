@@ -9,9 +9,9 @@ class AdminUserController
         $data = json_decode(file_get_contents("php://input"), true);
 
         $firstName = $data['first_name'] ?? '';
-        $lastName = $data['last_name'] ?? '';
-        $email = $data['email'] ?? '';
-        $role = $data['role'] ?? 'client';
+        $lastName  = $data['last_name']  ?? '';
+        $email     = $data['email']      ?? '';
+        $role      = $data['role']       ?? 'client';
 
         if (!$firstName || !$lastName || !$email) {
             echo json_encode([
@@ -53,6 +53,47 @@ class AdminUserController
 
         echo json_encode([
             "success" => true
+        ]);
+    }
+
+    public function getStats()
+    {
+        $pdo = Database::connect();
+
+        $total = $pdo
+            ->query("SELECT COUNT(*) FROM tickets")
+            ->fetchColumn();
+
+        $en_cours = $pdo
+            ->query("SELECT COUNT(*) FROM tickets WHERE status = 'en_cours'")
+            ->fetchColumn();
+
+        $traitee = $pdo
+            ->query("SELECT COUNT(*) FROM tickets WHERE status = 'traitee'")
+            ->fetchColumn();
+
+        $refusee = $pdo
+            ->query("SELECT COUNT(*) FROM tickets WHERE status = 'refusee'")
+            ->fetchColumn();
+
+        $users = $pdo
+            ->query("SELECT COUNT(*) FROM users")
+            ->fetchColumn();
+
+        $assets = $pdo
+            ->query("SELECT COUNT(*) FROM assets")
+            ->fetchColumn();
+
+        echo json_encode([
+            "success" => true,
+            "stats"   => [
+                "total_tickets" => (int) $total,
+                "en_cours"      => (int) $en_cours,
+                "traitee"       => (int) $traitee,
+                "refusee"       => (int) $refusee,
+                "users"         => (int) $users,
+                "assets"        => (int) $assets,
+            ]
         ]);
     }
 }

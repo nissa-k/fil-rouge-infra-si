@@ -6,6 +6,7 @@ require_once __DIR__ . '/../controllers/UserController.php';
 require_once __DIR__ . '/../controllers/ClientTicketController.php';
 require_once __DIR__ . '/../controllers/AssetController.php';
 require_once __DIR__ . '/../controllers/MessageController.php';
+require_once __DIR__ . '/../controllers/AdminUserController.php';
 require_once __DIR__ . '/../middlewares/AuthMiddleware.php';
 require_once __DIR__ . '/../middlewares/RoleMiddleware.php';
 
@@ -44,6 +45,9 @@ $assetController =
 
 $messageController =
     new MessageController();
+
+$adminUserController =
+    new AdminUserController();
 
 /* auth */
 
@@ -98,6 +102,19 @@ if ($uri === '/api/forgot-password' && $method === 'POST') {
 if ($uri === '/api/reset-password' && $method === 'POST') {
 
     $authController->resetPassword();
+
+    exit;
+}
+
+/* stats admin */
+
+if ($uri === '/api/admin/stats' && $method === 'GET') {
+
+    AuthMiddleware::handle();
+
+    RoleMiddleware::handle('admin');
+
+    $adminUserController->getStats();
 
     exit;
 }

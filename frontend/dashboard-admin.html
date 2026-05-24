@@ -22,53 +22,14 @@ requireAuth("admin");
 
     <h1>Dashboard Admin</h1>
 
+    <button class="logout-btn-small" onclick="logout()">Logout</button>
+
     <!-- stats -->
 
     <div
         id="statsCards"
         class="stats-grid"
     ></div>
-
-    <!-- actions -->
-
-    <div class="dashboard-grid">
-
-        <a
-            class="dash-card"
-            href="tickets-admin.html"
-        >
-            Gérer les tickets
-        </a>
-
-        <a
-            class="dash-card"
-            href="users.html"
-        >
-            Gérer utilisateurs
-        </a>
-
-        <a
-            class="dash-card"
-            href="create-user.html"
-        >
-            Créer utilisateur
-        </a>
-
-        <a
-            class="dash-card"
-            href="assets.html"
-        >
-            Parc informatique
-        </a>
-
-        <button
-            class="back-btn"
-            onclick="logout()"
-        >
-            Logout
-        </button>
-
-    </div>
 
     <script>
 
@@ -86,22 +47,16 @@ requireAuth("admin");
                     return;
                 }
 
-                const s =
-                    result.stats;
+                const s = result.stats;
 
-                document.getElementById(
-                    "statsCards"
-                ).innerHTML = `
+                document.getElementById("statsCards").innerHTML = `
 
                     <a
                         href="tickets-admin.html"
                         class="stat-card blue"
                     >
                         <h3>Total tickets</h3>
-
-                        <span>
-                            ${s.total_tickets}
-                        </span>
+                        <span>${s.total_tickets}</span>
                     </a>
 
                     <a
@@ -109,10 +64,7 @@ requireAuth("admin");
                         class="stat-card yellow"
                     >
                         <h3>En cours</h3>
-
-                        <span>
-                            ${s.en_cours}
-                        </span>
+                        <span>${s.en_cours}</span>
                     </a>
 
                     <a
@@ -120,10 +72,7 @@ requireAuth("admin");
                         class="stat-card green"
                     >
                         <h3>Traités</h3>
-
-                        <span>
-                            ${s.traitee}
-                        </span>
+                        <span>${s.traitee}</span>
                     </a>
 
                     <a
@@ -131,10 +80,7 @@ requireAuth("admin");
                         class="stat-card red"
                     >
                         <h3>Refusés</h3>
-
-                        <span>
-                            ${s.refusee}
-                        </span>
+                        <span>${s.refusee}</span>
                     </a>
 
                     <a
@@ -142,10 +88,15 @@ requireAuth("admin");
                         class="stat-card purple"
                     >
                         <h3>Utilisateurs</h3>
+                        <span>${s.users}</span>
+                    </a>
 
-                        <span>
-                            ${s.users}
-                        </span>
+                    <a
+                        href="assets.html"
+                        class="stat-card orange"
+                    >
+                        <h3>Parc informatique</h3>
+                        <span>${s.assets}</span>
                     </a>
 
                 `;
@@ -158,17 +109,27 @@ requireAuth("admin");
 
         async function logout() {
 
-            await fetch(
-                "http://localhost/fil-rouge-infra-si/backend/public/index.php/api/logout",
-                {
-                    method: "POST",
+            try {
 
-                    credentials: "include"
+                const result = await apiFetch("/api/logout", {
+                    method: "POST"
+                });
+
+                if (result.success) {
+
+                    window.location.href = "login.html";
+
+                } else {
+
+                    alert(result.message || "Erreur logout");
                 }
-            );
 
-            window.location.href =
-                "login.html";
+            } catch (error) {
+
+                console.error(error);
+
+                alert("Erreur réseau");
+            }
         }
 
         loadStats();
