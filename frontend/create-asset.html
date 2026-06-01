@@ -2,20 +2,15 @@
 <html lang="fr">
 
 <head>
-
     <meta charset="UTF-8">
-
     <title>Ajouter un matériel</title>
-
     <link rel="stylesheet" href="css/style.css">
-
 </head>
 
 <script src="js/api.js"></script>
 <script src="js/guard.js"></script>
-
 <script>
-requireAuth("admin");
+    requireAuth("admin");
 </script>
 
 <body>
@@ -26,126 +21,74 @@ requireAuth("admin");
 
         <form id="createAssetForm">
 
-            <input
-                type="text"
-                id="name"
-                placeholder="Nom du matériel"
-                required
-            >
+            <input type="text" id="name" placeholder="Nom du matériel" required>
 
             <select id="type" required>
-
-                <option value="">
-                    Type de matériel
-                </option>
-
-                <option value="pc">
-                    PC
-                </option>
-
-                <option value="laptop">
-                    Laptop
-                </option>
-
-                <option value="serveur">
-                    Serveur
-                </option>
-
-                <option value="switch">
-                    Switch
-                </option>
-
-                <option value="routeur">
-                    Routeur
-                </option>
-
-                <option value="imprimante">
-                    Imprimante
-                </option>
-
+                <option value="">Type de matériel</option>
+                <option value="pc">PC</option>
+                <option value="laptop">Laptop</option>
+                <option value="serveur">Serveur</option>
+                <option value="switch">Switch</option>
+                <option value="routeur">Routeur</option>
+                <option value="imprimante">Imprimante</option>
             </select>
 
-            <input
-                type="text"
-                id="marque"
-                placeholder="Marque"
-            >
-
-            <input
-                type="text"
-                id="modele"
-                placeholder="Modèle"
-            >
-
-            <input
-                type="text"
-                id="serial_number"
-                placeholder="Numéro de série"
-            >
-
-            <input
-                type="text"
-                id="os"
-                placeholder="Système d'exploitation"
-            >
-
-            <input
-                type="text"
-                id="ip_address"
-                placeholder="Adresse IP"
-            >
-
-            <input
-                type="text"
-                id="mac_address"
-                placeholder="Adresse MAC"
-            >
+            <input type="text" id="marque" placeholder="Marque">
+            <input type="text" id="modele" placeholder="Modèle">
+            <input type="text" id="serial_number" placeholder="Numéro de série">
+            <input type="text" id="os" placeholder="Système d'exploitation">
+            <input type="text" id="ip_address" placeholder="Adresse IP">
+            <input type="text" id="mac_address" placeholder="Adresse MAC">
 
             <select id="statut">
-
-                <option value="actif">
-                    Actif
-                </option>
-
-                <option value="maintenance">
-                    Maintenance
-                </option>
-
-                <option value="hors_service">
-                    Hors service
-                </option>
-
+                <option value="actif">Actif</option>
+                <option value="maintenance">Maintenance</option>
+                <option value="hors_service">Hors service</option>
             </select>
 
-            <input
-                type="number"
-                id="assigned_to"
-                placeholder="ID utilisateur assigné"
-            >
+            <select id="assigned_to">
+                <option value="">Aucun utilisateur assigné</option>
+            </select>
 
-            <input
-                type="date"
-                id="purchase_date"
-            >
+            <input type="date" id="purchase_date">
 
-            <button type="submit">
-                Ajouter
-            </button>
+            <button type="submit">Ajouter</button>
 
         </form>
 
         <p class="auth-link">
-
-            <a href="assets.html">
-                Retour au parc informatique
-            </a>
-
+            <a href="assets.html">Retour au parc informatique</a>
         </p>
 
     </div>
 
     <script src="js/assets.js"></script>
 
-</body>
+    <script>
+        // Charger les utilisateurs dans le select
+        async function loadUsers() {
+            try {
+                const response = await fetch(
+                    "http://localhost/fil-rouge-infra-si/backend/public/index.php/api/admin/users",
+                    { credentials: "include" }
+                );
+                const data = await response.json();
+                if (!data.success) return;
 
+                const select = document.getElementById("assigned_to");
+                data.users.forEach(user => {
+                    const option = document.createElement("option");
+                    option.value = user.id;
+                    option.textContent = user.full_name + " (" + user.email + ")";
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        loadUsers();
+    </script>
+
+</body>
 </html>
