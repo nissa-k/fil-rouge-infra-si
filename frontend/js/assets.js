@@ -165,7 +165,9 @@ if (createAssetForm) {
                     document.getElementById("statut").value,
 
                 assigned_to:
-                    document.getElementById("assigned_to").value || null,
+                    document.getElementById("assigned_to").value
+                        ? parseInt(document.getElementById("assigned_to").value)
+                        : null,
 
                 purchase_date:
                     document.getElementById("purchase_date").value

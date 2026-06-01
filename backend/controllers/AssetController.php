@@ -65,7 +65,7 @@ class AssetController {
         $ip_address = trim($data['ip_address'] ?? '');
         $mac_address = trim($data['mac_address'] ?? '');
         $statut = trim($data['statut'] ?? 'actif');
-        $assigned_to = $data['assigned_to'] ?? null;
+        $assigned_to = !empty($data['assigned_to']) ? (int)$data['assigned_to'] : null;
         $purchase_date = $data['purchase_date'] ?? null;
 
         if (!$name || !$type) {
