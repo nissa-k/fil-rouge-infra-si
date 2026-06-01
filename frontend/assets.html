@@ -2,20 +2,15 @@
 <html lang="fr">
 
 <head>
-
     <meta charset="UTF-8">
-
     <title>Parc Informatique</title>
-
     <link rel="stylesheet" href="css/style.css">
-
 </head>
 
 <body>
 
     <script src="js/api.js"></script>
     <script src="js/guard.js"></script>
-
     <script>
         requireAuth("admin");
     </script>
@@ -23,19 +18,15 @@
     <h1>Parc Informatique</h1>
 
     <div class="dashboard-grid">
-
         <a class="back-btn" href="create-asset.html">
             Ajouter un matériel
         </a>
-
         <a class="back-btn" href="dashboard-admin.html">
-            
             Retour dashboard
         </a>
-
     </div>
 
-    <div id="assetsContainer"></div>
+    <div id="assetsContainer" style="margin-top: 40px;"></div>
 
     <script src="js/assets.js"></script>
 
