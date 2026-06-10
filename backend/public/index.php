@@ -8,6 +8,7 @@ require_once __DIR__ . '/../controllers/UserController.php';
 require_once __DIR__ . '/../controllers/TicketController.php';
 require_once __DIR__ . '/../controllers/TechnicienController.php';
 require_once __DIR__ . '/../controllers/AssetController.php';
+require_once __DIR__ . '/../controllers/AdminUserController.php';
 
 require_once __DIR__ . '/../services/TicketService.php';
 require_once __DIR__ . '/../services/UserService.php';
@@ -41,6 +42,9 @@ $assetController =
 
 $messageController =
     new MessageController();
+
+$adminUserController =
+    new AdminUserController();
 
 /* uri */
 
@@ -156,11 +160,11 @@ elseif (
 }
 
 elseif (
-    $uri === '/api/admin/users/create'
+    $uri === '/api/admin/users'
     && $method === 'POST'
 ) {
 
-    $userController->create();
+    $adminUserController->createUser();
 
     exit;
 }

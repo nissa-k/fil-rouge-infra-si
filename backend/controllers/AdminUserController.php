@@ -6,52 +6,62 @@ class AdminUserController
 {
     public function createUser()
     {
-        $data = json_decode(file_get_contents("php://input"), true);
+        header("Content-Type: application/json; charset=UTF-8");
 
-        $firstName = $data['first_name'] ?? '';
-        $lastName  = $data['last_name']  ?? '';
-        $email     = $data['email']      ?? '';
-        $role      = $data['role']       ?? 'client';
+        try {
+            $data = json_decode(file_get_contents("php://input"), true);
 
-        if (!$firstName || !$lastName || !$email) {
+            $fullName = $data['full_name'] ?? '';
+            $email    = $data['email']     ?? '';
+            $role     = $data['role']      ?? 'client';
+
+            if (!$fullName || !$email) {
+                echo json_encode([
+                    "success" => false,
+                    "message" => "Champs requis manquants"
+                ]);
+                return;
+            }
+
+            $pdo = Database::getConnection();
+
+            $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
+            $stmt->execute([$email]);
+
+            if ($stmt->fetch()) {
+                echo json_encode([
+                    "success" => false,
+                    "message" => "Email déjà utilisé"
+                ]);
+                return;
+            }
+
+            $defaultPassword = password_hash("123456", PASSWORD_DEFAULT);
+
+            $stmt = $pdo->prepare("
+                INSERT INTO users (full_name, email, password_hash, role, must_change_password)
+                VALUES (?, ?, ?, ?, 1)
+            ");
+
+            $stmt->execute([
+                $fullName,
+                $email,
+                $defaultPassword,
+                $role
+            ]);
+
+            echo json_encode([
+                "success" => true,
+                "message" => "Utilisateur créé avec succès"
+            ]);
+
+        } catch (Exception $e) {
+            http_response_code(500);
             echo json_encode([
                 "success" => false,
-                "message" => "Champs requis manquants"
+                "message" => "Erreur serveur : " . $e->getMessage()
             ]);
-            return;
         }
-
-        $pdo = Database::getConnection();
-
-        $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
-        $stmt->execute([$email]);
-
-        if ($stmt->fetch()) {
-            echo json_encode([
-                "success" => false,
-                "message" => "Email déjà utilisé"
-            ]);
-            return;
-        }
-
-        $defaultPassword = password_hash("123456", PASSWORD_DEFAULT);
-
-        $stmt = $pdo->prepare("
-            INSERT INTO users (first_name, last_name, email, password_hash, role, must_change_password)
-            VALUES (?, ?, ?, ?, ?, 1)
-        ");
-
-        $stmt->execute([
-            $firstName,
-            $lastName,
-            $email,
-            $defaultPassword,
-            $role
-        ]);
-
-        echo json_encode([
-            "success" => true
-        ]);
     }
 
     public function getStats()

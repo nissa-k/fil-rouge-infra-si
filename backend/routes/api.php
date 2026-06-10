@@ -277,7 +277,7 @@ if ($uri === '/api/admin/users' && $method === 'POST') {
 
     RoleMiddleware::handle('admin');
 
-    $authController->createUser();
+    $adminUserController->createUser();
 
     exit;
 }
